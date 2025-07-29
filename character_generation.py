@@ -136,6 +136,25 @@ class CharacterGenerator:
         if 'money' in char_data:
             info_text += f"💰 **Деньги:** {char_data['money']} монет\n"
         
+        # Экипировка
+        equipment_text = ""
+        for equipment in char_data.get('equipment', []):
+            if equipment['type'] == 'armor':
+                armor_info = self.db.execute_query("SELECT name FROM armor WHERE id = %s", (equipment['id'],))
+                if armor_info:
+                    equipment_text += f"🛡️ **Доспехи:** {armor_info[0]['name']}\n"
+            elif equipment['type'] == 'weapon':
+                weapon_info = self.db.execute_query(
+                    "SELECT name, damage, damage_type, properties FROM weapons WHERE id = %s", 
+                    (equipment['id'],)
+                )
+                if weapon_info:
+                    weapon = weapon_info[0]
+                    equipment_text += f"⚔️ **Оружие:** {weapon['name']} ({weapon['damage']} {weapon['damage_type']})\n"
+        
+        if equipment_text:
+            info_text += equipment_text
+        
         # Дополнительная информация если есть класс
         if char_data.get('class_id'):
             try:
@@ -146,32 +165,107 @@ class CharacterGenerator:
                 
                 # Класс доспехов
                 armor_class = 10 + self.get_modifier(final_stats.get('dexterity', 10))
+                armor_description = f"{armor_class}"
                 
                 # Проверяем наличие доспехов
                 for equipment in char_data.get('equipment', []):
                     if equipment['type'] == 'armor':
-                        armor_info = self.db.execute_query("SELECT armor_class FROM armor WHERE id = %s", (equipment['id'],))
+                        armor_info = self.db.execute_query("SELECT armor_class, name FROM armor WHERE id = %s", (equipment['id'],))
                         if armor_info:
-                            armor_class = armor_info[0]['armor_class'] + self.get_modifier(final_stats.get('dexterity', 10))
+                            armor_base = armor_info[0]['armor_class']
+                            armor_name = armor_info[0]['name']
+                            
+                            # Обрабатываем различные типы КД доспехов
+                            if "+" in armor_base:
+                                # Например: "11 + Лов" или "12 + Лов (макс 2)"
+                                if "макс" in armor_base:
+                                    # Средние доспехи с ограничением
+                                    base_ac = int(armor_base.split()[0])
+                                    max_dex = int(armor_base.split("макс ")[1].split(")")[0])
+                                    dex_mod = min(self.get_modifier(final_stats.get('dexterity', 10)), max_dex)
+                                    armor_class = base_ac + dex_mod
+                                else:
+                                    # Легкие доспехи
+                                    base_ac = int(armor_base.split()[0])
+                                    armor_class = base_ac + self.get_modifier(final_stats.get('dexterity', 10))
+                            elif armor_base.startswith("+"):
+                                # Щит: "+2"
+                                armor_class += int(armor_base[1:])
+                            else:
+                                # Тяжелые доспехи: фиксированный КД
+                                try:
+                                    armor_class = int(armor_base)
+                                except ValueError:
+                                    # Если не удается преобразовать, используем базовый КД
+                                    pass
+                            
+                            armor_description = f"{armor_class} ({armor_name})"
                             break
                 
-                info_text += f"🛡️ **КД:** {armor_class}\n"
+                info_text += f"🛡️ **КД:** {armor_description}\n"
                 
-                # Информация об оружии
-                for equipment in char_data.get('equipment', []):
-                    if equipment['type'] == 'weapon':
-                        weapon_info = self.db.execute_query(
-                            "SELECT name, damage, damage_type FROM weapons WHERE id = %s", 
-                            (equipment['id'],)
-                        )
-                        if weapon_info:
-                            weapon = weapon_info[0]
-                            # Бонус атаки = модификатор силы/ловкости + бонус мастерства
-                            str_mod = self.get_modifier(final_stats.get('strength', 10))
-                            dex_mod = self.get_modifier(final_stats.get('dexterity', 10))
-                            attack_bonus = max(str_mod, dex_mod) + proficiency_bonus
+                # Информация об атаке для финального отображения
+                if char_data.get('step') == 'finalized':
+                    for equipment in char_data.get('equipment', []):
+                        if equipment['type'] == 'weapon':
+                            weapon_info = self.db.execute_query(
+                                "SELECT name, damage, damage_type, properties FROM weapons WHERE id = %s", 
+                                (equipment['id'],)
+                            )
+                            if weapon_info:
+                                weapon = weapon_info[0]
+                                # Проверяем свойства оружия
+                                try:
+                                    properties = json.loads(weapon['properties']) if weapon['properties'] else []
+                                except:
+                                    properties = []
+                                
+                                # Определяем модификатор для атаки
+                                str_mod = self.get_modifier(final_stats.get('strength', 10))
+                                dex_mod = self.get_modifier(final_stats.get('dexterity', 10))
+                                
+                                # Если оружие фехтовальное, используем лучший модификатор
+                                if "Фехтовальное" in properties:
+                                    attack_mod = max(str_mod, dex_mod)
+                                    damage_mod = max(str_mod, dex_mod)
+                                else:
+                                    # Для обычного оружия используем силу
+                                    attack_mod = str_mod
+                                    damage_mod = str_mod
+                                
+                                attack_bonus = attack_mod + proficiency_bonus
+                                
+                                # Формируем строку атаки с правильной обработкой урона
+                                damage_str = str(weapon['damage'])
+                                damage_type_str = str(weapon['damage_type'])
+                                info_text += f"⚔️ **Атака ({weapon['name']}):** {attack_bonus:+d} к атаке, {damage_str}{damage_mod:+d} {damage_type_str}\n"
+                    
+                    # Заклинания для заклинателей
+                    class_info = self.db.execute_query("SELECT is_spellcaster FROM classes WHERE id = %s", (char_data['class_id'],))
+                    if class_info and class_info[0]['is_spellcaster']:
+                        # Получаем заклинания персонажа из базы данных
+                        if 'character_id' in char_data:
+                            spells = self.db.execute_query("""
+                                SELECT s.name, s.level 
+                                FROM character_spells cs
+                                JOIN spells s ON cs.spell_id = s.id
+                                WHERE cs.character_id = %s
+                                ORDER BY s.level, s.name
+                            """, (char_data['character_id'],))
                             
-                            info_text += f"⚔️ **{weapon['name']}:** {attack_bonus:+d} к атаке, {weapon['damage']} {weapon['damage_type']}\n"
+                            if spells:
+                                spells_by_level = {}
+                                for spell in spells:
+                                    level = spell['level']
+                                    if level not in spells_by_level:
+                                        spells_by_level[level] = []
+                                    spells_by_level[level].append(spell['name'])
+                                
+                                info_text += "\n📜 **Заклинания:**\n"
+                                for level in sorted(spells_by_level.keys()):
+                                    level_name = "Заговоры" if level == 0 else f"{level} уровень"
+                                    spells_list = ", ".join(spells_by_level[level])
+                                    info_text += f"• {level_name}: {spells_list}\n"
                             
             except Exception as e:
                 logger.error(f"Error getting additional character info: {e}")
@@ -190,11 +284,33 @@ class CharacterGenerator:
         try:
             character_info = self.format_character_info(char_data)
             
-            await context.bot.send_message(
-                chat_id=update.effective_chat.id,
-                text=character_info,
-                parse_mode='Markdown'
-            )
+            # Если есть сохраненное сообщение, редактируем его
+            if 'character_info_message_id' in char_data:
+                try:
+                    await context.bot.edit_message_text(
+                        chat_id=update.effective_chat.id,
+                        message_id=char_data['character_info_message_id'],
+                        text=character_info,
+                        parse_mode='Markdown'
+                    )
+                except Exception as edit_error:
+                    logger.warning(f"Could not edit message, sending new one: {edit_error}")
+                    # Если не удалось отредактировать, отправляем новое
+                    message = await context.bot.send_message(
+                        chat_id=update.effective_chat.id,
+                        text=character_info,
+                        parse_mode='Markdown'
+                    )
+                    char_data['character_info_message_id'] = message.message_id
+            else:
+                # Отправляем первое сообщение и сохраняем его ID
+                message = await context.bot.send_message(
+                    chat_id=update.effective_chat.id,
+                    text=character_info,
+                    parse_mode='Markdown'
+                )
+                char_data['character_info_message_id'] = message.message_id
+                
         except Exception as e:
             logger.error(f"Error updating character info display: {e}")
     
@@ -238,10 +354,13 @@ class CharacterGenerator:
             'stat_adjustments': {}
         }
         
+        char_data = context.user_data['character_generation']
+        
         # Показываем характеристики с эмодзи вертикально
         await self.update_character_info_display(update, context)
         
-        await update.message.reply_text("Пожалуйста, введите имя для вашего персонажа:", parse_mode='HTML')
+        message = await update.message.reply_text("Пожалуйста, введите имя для вашего персонажа:", parse_mode='HTML')
+        char_data['name_prompt_message_id'] = message.message_id
     
     async def handle_name_input(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Обрабатывает ввод имени персонажа"""
@@ -265,6 +384,16 @@ class CharacterGenerator:
         char_data['step'] = 'race'
         logger.info(f"Character name set to: {name}, moving to race selection")
         
+        # Удаляем сообщение с просьбой ввести имя
+        if 'name_prompt_message_id' in char_data:
+            try:
+                await context.bot.delete_message(
+                    chat_id=update.effective_chat.id,
+                    message_id=char_data['name_prompt_message_id']
+                )
+            except Exception as delete_error:
+                logger.warning(f"Could not delete name prompt message: {delete_error}")
+
         await self.show_race_selection(update, context)
     
     async def show_race_selection(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -292,11 +421,19 @@ class CharacterGenerator:
         
         text = "Выберите расу вашего персонажа:"
         
-        await context.bot.send_message(
+        char_data = context.user_data.get('character_generation')
+        
+        # Обновляем окно создания персонажа до финального состояния
+        final_character_text = self.format_character_info(char_data)
+        final_character_text = final_character_text.replace("🎭 **Создание персонажа**\n\n", "🎭 **Персонаж создан!**\n\n")
+        
+        # Обновляем окно создания персонажа с финальной информацией и кнопкой
+        await context.bot.edit_message_text(
             chat_id=update.effective_chat.id,
-            text=text,
+            message_id=char_data['character_info_message_id'],
+            text=final_character_text,
             reply_markup=reply_markup,
-            parse_mode='HTML'
+            parse_mode='Markdown'
         )
     
     async def handle_race_selection(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -325,10 +462,12 @@ class CharacterGenerator:
         race_name = race_info[0]['name'] if race_info else "Неизвестная раса"
         logger.info(f"User selected race: {race_name} (ID: {race_id})")
 
+        # Удаляем окно выбора расы
+        await query.delete_message()
+        
         # Обновляем отображение информации о персонаже
         await self.update_character_info_display(update, context)
         
-        await query.edit_message_text(f"✅ Выбрана раса: <b>{race_name}</b>", parse_mode='HTML')
         await self.show_origin_selection(update, context)
     
     async def show_origin_selection(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -399,10 +538,12 @@ class CharacterGenerator:
         origin_name = origin_info[0]['name'] if origin_info else "Неизвестное происхождение"
         logger.info(f"User selected origin: {origin_name} (ID: {origin_id})")
         
+        # Удаляем окно выбора происхождения
+        await query.delete_message()
+        
         # Обновляем отображение информации о персонаже
         await self.update_character_info_display(update, context)
         
-        await query.edit_message_text(f"✅ Выбрано происхождение: <b>{origin_name}</b>", parse_mode='HTML')
         await self.show_stat_assignment(update, context)
     
     async def show_stat_assignment(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -475,9 +616,13 @@ class CharacterGenerator:
             return
         elif bonus_type == "1_1_1" and len(available_stats) >= 3:
             char_data['stat_adjustments'] = {stat: 1 for stat in available_stats[:3]}
+            # Удаляем окно распределения бонусов
+            await query.delete_message()
             await self.show_class_selection(update, context)
         else:
             char_data['stat_adjustments'] = {}
+            # Удаляем окно распределения бонусов
+            await query.delete_message()
             await self.show_class_selection(update, context)
     
     async def handle_bonus_stat_selection(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -507,6 +652,10 @@ class CharacterGenerator:
             return
         else:  # Если выбираем +1
             char_data['stat_adjustments'][stat_choice] = 1
+            
+            # Удаляем окно распределения бонусов
+            await query.delete_message()
+            
             await self.show_class_selection(update, context)
 
     async def show_class_selection(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -557,10 +706,12 @@ class CharacterGenerator:
         class_name = class_info[0]['name'] if class_info else "Неизвестный класс"
         logger.info(f"User selected class: {class_name} (ID: {class_id})")
         
+        # Удаляем окно выбора класса
+        await query.delete_message()
+        
         # Обновляем отображение информации о персонаже
         await self.update_character_info_display(update, context)
         
-        await query.edit_message_text(f"✅ Выбран класс: <b>{class_name}</b>", parse_mode='HTML')
         await self.show_skill_selection(update, context)
     
     async def show_skill_selection(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -638,7 +789,8 @@ class CharacterGenerator:
         # Обновляем отображение информации о персонаже
         await self.update_character_info_display(update, context)
         
-        await query.edit_message_text(f"✅ Выбран навык: <b>{skill}</b>", parse_mode='HTML')
+        # Удаляем окно выбора навыков
+        await query.delete_message()
         await self.update_skill_selection(update, context)
     
     async def show_equipment_selection(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -657,20 +809,6 @@ class CharacterGenerator:
         
         char_data['money'] = starting_money
         char_data['step'] = 'armor'
-        
-        text = f"""
-💰 <b>Покупка экипировки</b>
-
-У вас есть <b>{starting_money}</b> монет для покупки экипировки.
-
-Сначала выберите доспехи:
-        """
-        
-        await context.bot.send_message(
-            chat_id=update.effective_chat.id,
-            text=text,
-            parse_mode='HTML'
-        )
         
         await self.show_armor_selection(update, context)
     
@@ -740,7 +878,7 @@ class CharacterGenerator:
         
         if query.data == "armor_none":
             logger.info("User chose no armor")
-            await query.edit_message_text("✅ Доспехи не выбраны", parse_mode='HTML')
+            await query.delete_message()
         else:
             armor_id = int(query.data.split('_')[1])
             
@@ -754,7 +892,7 @@ class CharacterGenerator:
                 char_data['equipment'].append({'type': 'armor', 'id': armor_id})
                 logger.info(f"User bought armor: {armor['name']} for {armor['price']} coins")
                 
-                await query.edit_message_text(f"✅ Куплены доспехи: <b>{armor['name']}</b>", parse_mode='HTML')
+                await query.delete_message()
         
         # Обновляем отображение информации о персонаже
         await self.update_character_info_display(update, context)
@@ -843,7 +981,8 @@ class CharacterGenerator:
         
         if query.data == "weapon_done":
             logger.info("User finished equipment purchase")
-            await query.edit_message_text("✅ Покупка экипировки завершена", parse_mode='HTML')
+            # Удаляем окно выбора оружия
+            await query.delete_message()
             await self.finalize_character(update, context)
         else:
             weapon_id = int(query.data.split('_')[1])
@@ -862,7 +1001,7 @@ class CharacterGenerator:
                     # Обновляем отображение информации о персонаже
                     await self.update_character_info_display(update, context)
                     
-                    await query.edit_message_text(f"✅ Куплено оружие: <b>{weapon['name']}</b>", parse_mode='HTML')
+                    await query.delete_message()
                     await self.show_weapon_selection(update, context)
                 else:
                     await query.answer("Недостаточно денег!", show_alert=True)
@@ -933,8 +1072,26 @@ class CharacterGenerator:
                             (character_id, spell['id'])
                         )
         
-        # Показываем финальную информацию о персонаже
-        await self.show_final_character(update, context, character_id)
+        # Устанавливаем финальное состояние для отображения полной информации
+        char_data['step'] = 'finalized'
+        char_data['character_id'] = character_id
+        
+        # Обновляем окно создания персонажа до финального состояния
+        final_character_text = self.format_character_info(char_data)
+        final_character_text = final_character_text.replace("🎭 **Создание персонажа**\n\n", "🎭 **Персонаж создан!**\n\n")
+        
+        # Добавляем кнопку присоединения к группе
+        keyboard = [[InlineKeyboardButton("Вступить в группу", callback_data="join_group")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        # Обновляем окно создания персонажа с финальной информацией и кнопкой
+        await context.bot.edit_message_text(
+            chat_id=update.effective_chat.id,
+            message_id=char_data['character_info_message_id'],
+            text=final_character_text,
+            reply_markup=reply_markup,
+            parse_mode='Markdown'
+        )
         
         # Очищаем временные данные
         del context.user_data['character_generation']
