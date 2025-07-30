@@ -18,7 +18,7 @@ from adventure_manager import adventure_manager
 from database import get_db
 from action_handler import action_handler
 from callback_handler import handle_callback_query
-from bot import start, help_command, delete_character, join_adventure, leave_adventure, unknown_command
+from bot import start, help_command, version_command, show_character, show_party, delete_character, join_adventure, leave_adventure, unknown_command
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -33,7 +33,10 @@ def main():
     # Register handlers for commands
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help_command))
+    application.add_handler(CommandHandler("version", version_command))
     application.add_handler(CommandHandler("generate", character_gen.start_character_generation))
+    application.add_handler(CommandHandler("character", show_character))
+    application.add_handler(CommandHandler("party", show_party))
     application.add_handler(CommandHandler("startnewadventure", adventure_manager.start_new_adventure))
     application.add_handler(CommandHandler("terminateadventure", adventure_manager.terminate_adventure))
     application.add_handler(CommandHandler("deletecharacter", delete_character))

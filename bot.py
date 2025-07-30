@@ -1,4 +1,5 @@
 import logging
+import json
 from telegram import Update, BotCommand
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
 from config import TELEGRAM_BOT_TOKEN, ALLOWED_CHAT_ID
@@ -12,13 +13,280 @@ from callback_handler import handle_callback_query
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Emoji для характеристик
+STAT_EMOJIS = {
+    'strength': '🐂',      # Бык - Сила
+    'dexterity': '🐱',     # Кот - Ловкость  
+    'constitution': '🐻',  # Медведь - Телосложение
+    'intelligence': '🦊',  # Лиса - Интеллект
+    'wisdom': '🦉',        # Сова - Мудрость
+    'charisma': '🦅'       # Орёл - Харизма
+}
+
+# Названия характеристик на русском
+STAT_NAMES = {
+    'strength': 'Сила',
+    'dexterity': 'Ловкость',
+    'constitution': 'Телосложение', 
+    'intelligence': 'Интеллект',
+    'wisdom': 'Мудрость',
+    'charisma': 'Харизма'
+}
+
+def get_modifier(stat: int) -> int:
+    """Вычисляет модификатор характеристики"""
+    return (stat - 10) // 2
+
+def format_character_display(char: dict, db) -> str:
+    """Форматирует информацию о персонаже для отображения"""
+    # Форматируем характеристики вертикально (в том же стиле, что и окно создания)
+    stats_text = "\n📊 <b>Характеристики:</b>\n"
+    stat_names = ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma']
+    
+    for stat_name in stat_names:
+        emoji = STAT_EMOJIS.get(stat_name, '❓')
+        ru_name = STAT_NAMES.get(stat_name, stat_name)
+        value = char.get(stat_name, 10)
+        modifier = get_modifier(value)
+        stats_text += f"{emoji} <b>{ru_name}:</b> {value} ({modifier:+d})\n"
+    
+    # Заголовок для команды /character
+    info_text = "🎭 <b>Информация о персонаже</b>\n\n"
+    
+    # Основная информация (в том же порядке, что и в окне создания)
+    info_text += f"👤 <b>Имя:</b> {char['name']}\n"
+    info_text += f"🧝‍♂️ <b>Раса:</b> {char['race_name']}\n"
+    info_text += f"🎭 <b>Происхождение:</b> {char['origin_name']}\n"
+    info_text += f"⚔️ <b>Класс:</b> {char['class_name']}\n"
+    
+    # Добавляем уровень и опыт (новые поля)
+    info_text += f"📊 <b>Уровень:</b> {char['level']}\n"
+    info_text += f"⭐ <b>Опыт:</b> {char['experience']}\n"
+    
+    # Навыки (восстанавливаем из класса и происхождения)
+    skills_info = []
+    try:
+        class_query = "SELECT skills_available, skills_count FROM classes WHERE id = %s"
+        class_info = db.execute_query(class_query, (char.get('class_id'),))
+        
+        if class_info:
+            available_skills = json.loads(class_info[0]['skills_available']) if class_info[0]['skills_available'] else []
+            skills_count = class_info[0]['skills_count']
+            
+            # Для простоты берем первые N навыков из списка доступных
+            if available_skills and len(available_skills) >= skills_count:
+                skills_info = available_skills[:skills_count]
+        
+        # Получаем навыки из происхождения
+        origin_query = "SELECT skills FROM origins WHERE id = %s"
+        origin_info = db.execute_query(origin_query, (char.get('origin_id'),))
+        
+        if origin_info and origin_info[0]['skills']:
+            origin_skills = json.loads(origin_info[0]['skills'])
+            skills_info.extend(origin_skills)
+        
+        if skills_info:
+            # Убираем дубликаты
+            skills_info = list(set(skills_info))
+            skills_text = ", ".join(skills_info)
+            info_text += f"🎯 <b>Навыки:</b> {skills_text}\n"
+            
+    except Exception as e:
+        logger.error(f"Error getting skills info: {e}")
+    
+    # Деньги
+    info_text += f"💰 <b>Деньги:</b> {char.get('money', 0)} монет\n"
+    
+    # Проверяем наличие доспехов и оружия для экипировки
+    if not db.connection or not db.connection.is_connected():
+        db.connect()
+    
+    equipment_query = """
+        SELECT ce.item_type, ce.item_id, ce.is_equipped,
+               CASE 
+                   WHEN ce.item_type = 'armor' THEN a.name
+                   WHEN ce.item_type = 'weapon' THEN w.name
+               END as item_name,
+               CASE 
+                   WHEN ce.item_type = 'weapon' THEN w.damage
+                   ELSE NULL
+               END as damage,
+               CASE 
+                   WHEN ce.item_type = 'weapon' THEN w.damage_type
+                   ELSE NULL
+               END as damage_type
+        FROM character_equipment ce
+        LEFT JOIN armor a ON ce.item_type = 'armor' AND ce.item_id = a.id
+        LEFT JOIN weapons w ON ce.item_type = 'weapon' AND ce.item_id = w.id
+        WHERE ce.character_id = %s
+    """
+    
+    equipment = db.execute_query(equipment_query, (char['id'],))
+    
+    # Добавляем экипировку в том же стиле, что и в окне создания
+    if equipment:
+        for item in equipment:
+            if item['item_type'] == 'armor':
+                info_text += f"🛡️ <b>Доспехи:</b> {item['item_name']}\n"
+            elif item['item_type'] == 'weapon':
+                damage_text = f" ({item['damage']} {item['damage_type']})" if item['damage'] and item['damage_type'] else ""
+                info_text += f"⚔️ <b>Оружие:</b> {item['item_name']}{damage_text}\n"
+    
+    # Бонус мастерства
+    info_text += f"🎯 <b>Бонус мастерства:</b> +{char.get('proficiency_bonus', 2)}\n"
+    
+    # Класс доспехов (с учетом доспехов)
+    armor_class = 10 + get_modifier(char.get('dexterity', 10))
+    armor_description = f"{armor_class}"
+    
+    # Проверяем наличие доспехов для КД
+    armor_query = """
+        SELECT a.armor_class, a.name 
+        FROM character_equipment ce
+        INNER JOIN armor a ON ce.item_id = a.id
+        WHERE ce.character_id = %s AND ce.item_type = 'armor' AND ce.is_equipped = TRUE
+    """
+    
+    equipped_armor = db.execute_query(armor_query, (char['id'],))
+    
+    if equipped_armor:
+        armor_base = equipped_armor[0]['armor_class']
+        armor_name = equipped_armor[0]['name']
+        
+        # Обрабатываем различные типы КД доспехов
+        if "+" in armor_base:
+            if "макс" in armor_base:
+                # Средние доспехи с ограничением
+                base_ac = int(armor_base.split()[0])
+                max_dex = int(armor_base.split("макс ")[1].split(")")[0])
+                dex_mod = min(get_modifier(char.get('dexterity', 10)), max_dex)
+                armor_class = base_ac + dex_mod
+            else:
+                # Легкие доспехи
+                base_ac = int(armor_base.split()[0])
+                armor_class = base_ac + get_modifier(char.get('dexterity', 10))
+        elif armor_base.startswith("+"):
+            # Щит
+            armor_class += int(armor_base[1:])
+        else:
+            # Тяжелые доспехи
+            try:
+                armor_class = int(armor_base)
+            except ValueError:
+                pass
+        
+        armor_description = f"{armor_class} ({armor_name})"
+    
+    info_text += f"🛡️ <b>КД:</b> {armor_description}\n"
+    
+    # Информация об атаке (как в финальном окне создания)
+    weapon_query = """
+        SELECT w.name, w.damage, w.damage_type, w.properties
+        FROM character_equipment ce
+        INNER JOIN weapons w ON ce.item_id = w.id
+        WHERE ce.character_id = %s AND ce.item_type = 'weapon' AND ce.is_equipped = TRUE
+    """
+    
+    equipped_weapons = db.execute_query(weapon_query, (char['id'],))
+    
+    if equipped_weapons:
+        for weapon in equipped_weapons:
+            # Проверяем свойства оружия
+            try:
+                properties = json.loads(weapon['properties']) if weapon['properties'] else []
+            except:
+                properties = []
+            
+            # Определяем модификатор для атаки
+            str_mod = get_modifier(char.get('strength', 10))
+            dex_mod = get_modifier(char.get('dexterity', 10))
+            
+            # Если оружие фехтовальное, используем лучший модификатор
+            if "Фехтовальное" in properties:
+                attack_mod = max(str_mod, dex_mod)
+                damage_mod = max(str_mod, dex_mod)
+            else:
+                # Для обычного оружия используем силу
+                attack_mod = str_mod
+                damage_mod = str_mod
+            
+            proficiency_bonus = char.get('proficiency_bonus', 2)
+            attack_bonus = attack_mod + proficiency_bonus
+            
+            # Формируем строку атаки (точно как в окне создания)
+            damage_str = str(weapon['damage'])
+            damage_type_str = str(weapon['damage_type'])
+            info_text += f"⚔️ <b>Атака ({weapon['name']}):</b> {attack_bonus:+d} к атаке, {damage_str}{damage_mod:+d} {damage_type_str}\n"
+    
+    # Заклинания для заклинателей (как в финальном окне создания)
+    if char.get('is_spellcaster'):
+        spells_query = """
+            SELECT s.name, s.level 
+            FROM character_spells cs
+            JOIN spells s ON cs.spell_id = s.id
+            WHERE cs.character_id = %s
+            ORDER BY s.level, s.name
+        """
+        
+        spells = db.execute_query(spells_query, (char['id'],))
+        
+        if spells:
+            spells_by_level = {}
+            for spell in spells:
+                level = spell['level']
+                if level not in spells_by_level:
+                    spells_by_level[level] = []
+                spells_by_level[level].append(spell['name'])
+            
+            info_text += "\n📜 <b>Заклинания:</b>\n"
+            for level in sorted(spells_by_level.keys()):
+                level_name = "Заговоры" if level == 0 else f"{level} уровень"
+                spells_list = ", ".join(spells_by_level[level])
+                info_text += f"• <b>{level_name}:</b> {spells_list}\n"
+    
+    # Добавляем характеристики в конце (как в окне создания)
+    info_text += stats_text
+    
+    return info_text
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handler for /start command"""
+    logger.info(f"Start command called by user {update.effective_user.id} in chat {update.effective_chat.id}")
+    
     if update.effective_chat.id != ALLOWED_CHAT_ID:
+        logger.warning(f"Start command blocked - chat {update.effective_chat.id} not allowed (expected: {ALLOWED_CHAT_ID})")
         await update.message.reply_text("This bot is not allowed in this chat.")
         return
         
     await update.message.reply_text("Welcome to the D&D adventure bot!")
+    logger.info("Start command completed successfully")
+
+async def version_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Show bot version and registered commands"""
+    logger.info(f"Version command called by user {update.effective_user.id} in chat {update.effective_chat.id}")
+    
+    if update.effective_chat.id != ALLOWED_CHAT_ID:
+        return
+    
+    import datetime
+    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    version_text = f"""🤖 <b>Информация о боте</b>
+
+📅 <b>Время запроса:</b> {now}
+🔄 <b>Версия:</b> 2.0 (с командами /character и /party)
+
+✅ <b>Доступные команды:</b>
+• /start - Запуск бота
+• /generate - Создать персонажа
+• /character - Показать персонажа ⭐ НОВАЯ
+• /party - Показать группу ⭐ НОВАЯ
+• /help - Помощь
+• /version - Эта команда
+
+🔧 <b>Статус:</b> Работает"""
+    
+    await update.message.reply_text(version_text, parse_mode='HTML')
     
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handler for /help command"""
@@ -28,6 +296,8 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     help_text = """Available commands:\n
     /start - Start the bot\n
     /generate - Generate a new D&D character\n
+    /character - Show your current character info\n
+    /party - Show current party members\n
     /startnewadventure - Start a new adventure\n
     /terminateadventure - Terminate the current adventure\n
     /deletecharacter - Delete your character\n
@@ -153,6 +423,101 @@ async def leave_adventure(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     
     await update.message.reply_text("You have left the adventure.")
 
+async def show_character(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Show current character information"""
+    logger.info(f"Character command called by user {update.effective_user.id} in chat {update.effective_chat.id}")
+    
+    if update.effective_chat.id != ALLOWED_CHAT_ID:
+        logger.warning(f"Character command blocked - chat {update.effective_chat.id} not allowed (expected: {ALLOWED_CHAT_ID})")
+        await update.message.reply_text("❌ Эта команда недоступна в данном чате.")
+        return
+    
+    user_id = update.effective_user.id
+    logger.info(f"Processing character command for user {user_id}")
+    db = get_db()
+    
+    if not db.connection or not db.connection.is_connected():
+        db.connect()
+    
+    # Get character data
+    character_query = """
+        SELECT c.*, r.name as race_name, o.name as origin_name, cl.name as class_name,
+               cl.hit_die, cl.is_spellcaster, l.proficiency_bonus
+        FROM characters c
+        LEFT JOIN races r ON c.race_id = r.id
+        LEFT JOIN origins o ON c.origin_id = o.id
+        LEFT JOIN classes cl ON c.class_id = cl.id
+        LEFT JOIN levels l ON c.level = l.level
+        WHERE c.user_id = %s AND c.is_active = TRUE
+    """
+    
+    character = db.execute_query(character_query, (user_id,))
+    
+    if not character:
+        await update.message.reply_text("❌ У вас нет активного персонажа. Используйте /generate для создания персонажа.")
+        return
+    
+    char = character[0]
+    
+    # Format character information
+    char_info = format_character_display(char, db)
+    
+    await update.message.reply_text(char_info, parse_mode='HTML')
+
+async def show_party(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Show current party members"""
+    if update.effective_chat.id != ALLOWED_CHAT_ID:
+        return
+    
+    db = get_db()
+    
+    if not db.connection or not db.connection.is_connected():
+        db.connect()
+    
+    # Find active adventure in this chat
+    adventure = db.execute_query(
+        "SELECT id FROM adventures WHERE chat_id = %s AND status = 'active'",
+        (update.effective_chat.id,)
+    )
+    
+    if not adventure:
+        await update.message.reply_text("❌ В этом чате нет активного приключения.")
+        return
+    
+    # Get party members
+    party_query = """
+        SELECT c.name, c.level, c.experience, c.user_id, cl.name as class_name
+        FROM adventure_participants ap
+        INNER JOIN characters c ON ap.character_id = c.id
+        INNER JOIN classes cl ON c.class_id = cl.id
+        WHERE ap.adventure_id = %s
+        ORDER BY c.name
+    """
+    
+    party_members = db.execute_query(party_query, (adventure[0]['id'],))
+    
+    if not party_members:
+        await update.message.reply_text("👥 В группе пока нет участников.")
+        return
+    
+    party_text = "👥 <b>Состав группы:</b>\n\n"
+    
+    for i, member in enumerate(party_members, 1):
+        # Get user info from Telegram
+        try:
+            user = await context.bot.get_chat_member(update.effective_chat.id, member['user_id'])
+            username = user.user.username or user.user.first_name or "Unknown"
+        except:
+            username = "Unknown"
+        
+        party_text += f"{i}. <b>{member['name']}</b>\n"
+        party_text += f"   👤 Игрок: @{username}\n"
+        party_text += f"   ⚔️ Класс: {member['class_name']}\n"
+        party_text += f"   📊 Уровень: {member['level']}\n"
+        party_text += f"   ⭐ Опыт: {member['experience']}\n\n"
+    
+    await update.message.reply_text(party_text, parse_mode='HTML')
+
 async def unknown_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handler for unknown commands"""
     await update.message.reply_text("Sorry, I didn't understand that command.")
@@ -165,7 +530,10 @@ async def main() -> None:
     # Register handlers for commands
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help_command))
+    application.add_handler(CommandHandler("version", version_command))
     application.add_handler(CommandHandler("generate", character_gen.start_character_generation))
+    application.add_handler(CommandHandler("character", show_character))
+    application.add_handler(CommandHandler("party", show_party))
     application.add_handler(CommandHandler("startnewadventure", adventure_manager.start_new_adventure))
     application.add_handler(CommandHandler("terminateadventure", adventure_manager.terminate_adventure))
     application.add_handler(CommandHandler("deletecharacter", delete_character))
