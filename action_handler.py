@@ -1,9 +1,11 @@
 import logging
+import re
 from telegram import Update
 from telegram.ext import ContextTypes
 from database import get_db
 from grok_api import grok
 from combat_manager import combat_manager
+from telegram_utils import send_long_message
 import asyncio
 
 logger = logging.getLogger(__name__)
@@ -40,6 +42,38 @@ class ActionHandler:
 
         character = character_info[0]
         adventure_id = character['adventure_id']
+        character_id = character['id']
+        
+        # Проверяем навыки и заклинания в квадратных скобках
+        skill_spell_pattern = r'\[([^\]]+)\]'
+        matches = re.findall(skill_spell_pattern, action_text)
+        
+        if matches:
+            # Получаем навыки персонажа
+            character_skills = self.db.execute_query(
+                "SELECT skill_name FROM character_skills WHERE character_id = %s",
+                (character_id,)
+            )
+            skill_names = [skill['skill_name'] for skill in character_skills] if character_skills else []
+            
+            # Получаем заклинания персонажа
+            character_spells = self.db.execute_query(
+                "SELECT s.name FROM character_spells cs "
+                "JOIN spells s ON cs.spell_id = s.id "
+                "WHERE cs.character_id = %s",
+                (character_id,)
+            )
+            spell_names = [spell['name'] for spell in character_spells] if character_spells else []
+            
+            # Проверяем каждое упоминание в квадратных скобках
+            for match in matches:
+                if match not in skill_names and match not in spell_names:
+                    await update.message.reply_text(
+                        f"❌ У вашего персонажа нет навыка или заклинания '{match}'. "
+                        f"Доступные навыки: {', '.join(skill_names) if skill_names else 'нет'}. "
+                        f"Доступные заклинания: {', '.join(spell_names) if spell_names else 'нет'}."
+                    )
+                    return
 
         # Store the action
         if adventure_id not in self.pending_actions:
@@ -90,7 +124,7 @@ class ActionHandler:
         )
 
         # Send response to chat
-        await update.message.reply_text(response_text)
+        await send_long_message(update, context, response_text)
 
         # Handle XP reward if any
         if xp_reward > 0:

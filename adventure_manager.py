@@ -3,6 +3,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from database import get_db
 from grok_api import grok
+from telegram_utils import send_long_message
 import asyncio
 
 logger = logging.getLogger(__name__)
@@ -99,15 +100,38 @@ class AdventureManager:
             "WHERE ap.adventure_id = %s",
             (adventure_id,)
         )
+        
+        # Получаем навыки и заклинания для каждого персонажа
+        for character in characters:
+            # Получаем навыки персонажа
+            skills = self.db.execute_query(
+                "SELECT skill_name FROM character_skills WHERE character_id = %s",
+                (character['id'],)
+            )
+            character['skills'] = [skill['skill_name'] for skill in skills] if skills else []
+            
+            # Получаем заклинания персонажа
+            spells = self.db.execute_query(
+                "SELECT s.name, s.level FROM character_spells cs "
+                "JOIN spells s ON cs.spell_id = s.id "
+                "WHERE cs.character_id = %s ORDER BY s.level, s.name",
+                (character['id'],)
+            )
+            character['spells'] = spells if spells else []
 
         if not characters:
             await query.edit_message_text("No participants found.")
             return
 
         # Generate adventure intro
+        logger.info("FLOW: About to call grok.generate_adventure_intro")
         intro_text = await asyncio.to_thread(grok.generate_adventure_intro, adventure_id, characters)
+        logger.info(f"FLOW: Received intro_text from Grok, length: {len(intro_text)} characters")
+        logger.info(f"FLOW: First 200 characters of intro_text: {intro_text[:200]}...")
 
-        await query.edit_message_text(intro_text)
+        logger.info("FLOW: About to send intro_text to Telegram")
+        await send_long_message(update, context, intro_text)
+        logger.info("FLOW: Finished sending intro_text to Telegram")
         # Update adventure status
         self.db.execute_query(
             "UPDATE adventures SET status = 'active' WHERE id = %s",

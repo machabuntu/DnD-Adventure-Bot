@@ -82,6 +82,7 @@ class DatabaseManager:
         drop_tables = [
             "DROP TABLE IF EXISTS adventure_participants",
             "DROP TABLE IF EXISTS character_spells",
+            "DROP TABLE IF EXISTS character_skills",
             "DROP TABLE IF EXISTS character_equipment",
             "DROP TABLE IF EXISTS combat_participants",
             "DROP TABLE IF EXISTS enemies",
@@ -282,6 +283,16 @@ class DatabaseManager:
                 spell_id INT,
                 FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE,
                 FOREIGN KEY (spell_id) REFERENCES spells(id) ON DELETE CASCADE
+            )
+            """,
+            
+            # Character skills table
+            """
+            CREATE TABLE character_skills (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                character_id INT,
+                skill_name VARCHAR(100) NOT NULL,
+                FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
             )
             """,
             

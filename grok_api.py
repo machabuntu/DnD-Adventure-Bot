@@ -47,7 +47,10 @@ class GrokAPI:
         
         5. СМЕРТЬ ПЕРСОНАЖЕЙ: Если персонаж умирает в бою, больше не упоминай его в дальнейшем повествовании.
         
+        6. НАВЫКИ И ЗАКЛИНАНИЯ: Если в запросе указано, что тот или иной персонаж использует навык или заклинание, считай, что у него оно всегда было.
+        
         Создавай интересные приключения с загадками, ролевыми моментами, исследованием и боевыми столкновениями!
+        Не заканчивай ответы, предложением вариантов действий.
         """
     
     def send_request(self, messages: List[Dict[str, str]]) -> Dict[str, Any]:
@@ -56,25 +59,57 @@ class GrokAPI:
             payload = {
                 "model": self.model,
                 "messages": messages,
-                "temperature": 0.8,
-                "max_tokens": 1500
+                "temperature": 0.7,  # Slightly more focused responses
+                "max_tokens": 2000,  # Increased token limit to reduce truncation
+                "stream": False
             }
             
-            response = requests.post(
-                self.api_url, 
-                headers=self.headers, 
-                json=payload,
-                timeout=30
-            )
+            logger.info(f"Sending request to Grok API: {self.api_url}")
+            logger.info(f"Model: {self.model}")
+            logger.info(f"Messages count: {len(messages)}")
+            logger.info(f"Total characters in messages: {sum(len(msg['content']) for msg in messages)}")
+            
+            # Try with longer timeout and session for connection reuse
+            with requests.Session() as session:
+                session.headers.update(self.headers)
+                
+                response = session.post(
+                    self.api_url, 
+                    json=payload,
+                    timeout=(30, 180),  # connection timeout 30s, read timeout 3 minutes
+                    stream=False
+                )
+                
+                logger.info(f"Response status code: {response.status_code}")
+                logger.info(f"Response headers: {dict(response.headers)}")
             
             if response.status_code == 200:
-                return response.json()
+                result = response.json()
+                logger.info(f"Successfully received response from Grok API")
+                if 'choices' in result and len(result['choices']) > 0:
+                    full_response = result['choices'][0]['message']['content']
+                    content_length = len(full_response)
+                    logger.info(f"Response content length: {content_length} characters")
+                    logger.info(f"Full Grok response: {full_response}")
+                return result
             else:
                 logger.error(f"Grok API error: {response.status_code} - {response.text}")
                 return None
                 
+        except requests.exceptions.Timeout as e:
+            logger.error(f"Timeout error calling Grok API: {e}")
+            logger.error(f"This might indicate the model is taking too long to respond")
+            return None
+        except requests.exceptions.ConnectionError as e:
+            logger.error(f"Connection error calling Grok API: {e}")
+            logger.error(f"Check your internet connection and API URL: {self.api_url}")
+            return None
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Request error calling Grok API: {e}")
+            return None
         except Exception as e:
-            logger.error(f"Error calling Grok API: {e}")
+            logger.error(f"Unexpected error calling Grok API: {e}")
+            logger.error(f"Error type: {type(e).__name__}")
             return None
     
     def get_conversation_history(self, adventure_id: int) -> List[Dict[str, str]]:
@@ -104,6 +139,9 @@ class GrokAPI:
         if not self.db.connection or not self.db.connection.is_connected():
             self.db.connect()
             
+        logger.info(f"Saving message to database - Adventure ID: {adventure_id}, Role: {role}, Content length: {len(content)} characters")
+        logger.debug(f"Message content being saved: {content[:500]}{'...' if len(content) > 500 else ''}")
+        
         self.db.execute_query(
             "INSERT INTO chat_history (adventure_id, role, content) VALUES (%s, %s, %s)",
             (adventure_id, role, content)
@@ -111,9 +149,42 @@ class GrokAPI:
     
     def generate_adventure_intro(self, adventure_id: int, characters: List[Dict]) -> str:
         """Генерирует вступление к приключению"""
+        logger.info(f"Starting adventure intro generation for adventure_id: {adventure_id}")
         character_info = []
         for char in characters:
-            char_desc = f"- {char['name']} ({char['race']}, {char['class']}, {char['origin']})"
+            # Функция для вычисления модификатора характеристики
+            def get_modifier(stat_value):
+                return (stat_value - 10) // 2
+            
+            # Формируем детальную информацию о персонаже
+            char_desc = f"- {char['name']} ({char['race_name']}, {char['class_name']}, {char['origin_name']})\n"
+            char_desc += f"  Характеристики: Сила {char['strength']} ({get_modifier(char['strength']):+d}), "
+            char_desc += f"Ловкость {char['dexterity']} ({get_modifier(char['dexterity']):+d}), "
+            char_desc += f"Телосложение {char['constitution']} ({get_modifier(char['constitution']):+d}), "
+            char_desc += f"Интеллект {char['intelligence']} ({get_modifier(char['intelligence']):+d}), "
+            char_desc += f"Мудрость {char['wisdom']} ({get_modifier(char['wisdom']):+d}), "
+            char_desc += f"Харизма {char['charisma']} ({get_modifier(char['charisma']):+d})\n"
+            
+            # Добавляем навыки
+            if char.get('skills'):
+                skills_text = ", ".join(char['skills'])
+                char_desc += f"  Навыки: {skills_text}\n"
+                
+            # Добавляем заклинания
+            if char.get('spells'):
+                spells_by_level = {}
+                for spell in char['spells']:
+                    level = spell['level']
+                    if level not in spells_by_level:
+                        spells_by_level[level] = []
+                    spells_by_level[level].append(spell['name'])
+                
+                char_desc += "  Заклинания:\n"
+                for level in sorted(spells_by_level.keys()):
+                    level_name = "Заговоры" if level == 0 else f"{level} уровень"
+                    spells_list = ", ".join(spells_by_level[level])
+                    char_desc += f"    {level_name}: {spells_list}\n"
+            
             character_info.append(char_desc)
         
         characters_text = "\n".join(character_info)
@@ -139,11 +210,15 @@ class GrokAPI:
         if response and 'choices' in response:
             intro_text = response['choices'][0]['message']['content']
             
+            logger.info(f"Generated intro text length: {len(intro_text)} characters")
+            logger.info("FLOW: About to save messages to database in order: system, user, assistant")
+            
             # Сохраняем в историю
             self.save_message(adventure_id, "system", self.system_prompt)
             self.save_message(adventure_id, "user", user_prompt)
             self.save_message(adventure_id, "assistant", intro_text)
             
+            logger.info("FLOW: Finished saving messages to database, returning intro_text")
             return intro_text
         else:
             return "Произошла ошибка при генерации приключения. Попробуйте еще раз."
@@ -179,9 +254,14 @@ class GrokAPI:
         
         response_text = response['choices'][0]['message']['content']
         
+        logger.info(f"Generated continue adventure response length: {len(response_text)} characters")
+        logger.info("FLOW: About to save messages to database in order: user, assistant")
+        
         # Сохраняем в историю
         self.save_message(adventure_id, "user", actions_text)
         self.save_message(adventure_id, "assistant", response_text)
+        
+        logger.info("FLOW: Finished saving messages to database, returning response_text")
         
         # Анализируем ответ на предмет боя и опыта
         enemies_data = self.parse_enemies(response_text, adventure_id)

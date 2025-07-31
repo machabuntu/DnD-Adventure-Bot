@@ -63,33 +63,18 @@ def format_character_display(char: dict, db) -> str:
     info_text += f"📊 <b>Уровень:</b> {char['level']}\n"
     info_text += f"⭐ <b>Опыт:</b> {char['experience']}\n"
     
-    # Навыки (восстанавливаем из класса и происхождения)
-    skills_info = []
+    # Навыки (получаем из новой таблицы character_skills)
     try:
-        class_query = "SELECT skills_available, skills_count FROM classes WHERE id = %s"
-        class_info = db.execute_query(class_query, (char.get('class_id'),))
+        skills_query = "SELECT skill_name FROM character_skills WHERE character_id = %s"
+        skills_result = db.execute_query(skills_query, (char['id'],))
         
-        if class_info:
-            available_skills = json.loads(class_info[0]['skills_available']) if class_info[0]['skills_available'] else []
-            skills_count = class_info[0]['skills_count']
-            
-            # Для простоты берем первые N навыков из списка доступных
-            if available_skills and len(available_skills) >= skills_count:
-                skills_info = available_skills[:skills_count]
-        
-        # Получаем навыки из происхождения
-        origin_query = "SELECT skills FROM origins WHERE id = %s"
-        origin_info = db.execute_query(origin_query, (char.get('origin_id'),))
-        
-        if origin_info and origin_info[0]['skills']:
-            origin_skills = json.loads(origin_info[0]['skills'])
-            skills_info.extend(origin_skills)
-        
-        if skills_info:
-            # Убираем дубликаты
-            skills_info = list(set(skills_info))
+        if skills_result:
+            skills_info = [skill['skill_name'] for skill in skills_result]
             skills_text = ", ".join(skills_info)
             info_text += f"🎯 <b>Навыки:</b> {skills_text}\n"
+        else:
+            # Fallback для старых персонажей без навыков в новой таблице
+            info_text += f"🎯 <b>Навыки:</b> не определены (старый персонаж)\n"
             
     except Exception as e:
         logger.error(f"Error getting skills info: {e}")
@@ -518,9 +503,23 @@ async def show_party(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
     
     await update.message.reply_text(party_text, parse_mode='HTML')
 
+async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Handler for errors"""
+    logger.error(f"Update {update} caused error {context.error}")
+    
+    # Try to respond to the user if possible
+    try:
+        if update.message:
+            await update.message.reply_text("Произошла ошибка. Попробуйте еще раз.")
+        elif update.callback_query:
+            await update.callback_query.answer("Произошла ошибка. Попробуйте еще раз.", show_alert=True)
+    except Exception as e:
+        logger.error(f"Failed to send error message to user: {e}")
+
 async def unknown_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handler for unknown commands"""
-    await update.message.reply_text("Sorry, I didn't understand that command.")
+    if update.message:
+        await update.message.reply_text("Sorry, I didn't understand that command.")
 
 # Main function to start the bot
 async def main() -> None:
@@ -547,8 +546,8 @@ async def main() -> None:
     # Add message handler for character name input
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, character_gen.handle_name_input))
     
-    # Register handler for unknown commands
-    application.add_error_handler(unknown_command)
+    # Register error handler
+    application.add_error_handler(error_handler)
 
     # Start the bot
     logger.info("Starting the bot...")

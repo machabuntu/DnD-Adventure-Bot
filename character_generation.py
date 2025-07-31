@@ -1061,6 +1061,14 @@ class CharacterGenerator:
                         (character_id, equipment['type'], equipment['id'])
                     )
                 
+                # Добавляем навыки
+                selected_skills = char_data.get('selected_skills', [])
+                for skill in selected_skills:
+                    self.db.execute_query(
+                        "INSERT INTO character_skills (character_id, skill_name) VALUES (%s, %s)",
+                        (character_id, skill)
+                    )
+                
                 # Добавляем заклинания если класс заклинатель
                 class_info = self.db.execute_query("SELECT is_spellcaster FROM classes WHERE id = %s", (char_data['class_id'],))
                 if class_info and class_info[0]['is_spellcaster']:

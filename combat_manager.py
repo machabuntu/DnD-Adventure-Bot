@@ -4,6 +4,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from database import get_db
 from grok_api import grok
+from telegram_utils import send_long_message
 import asyncio
 
 logger = logging.getLogger(__name__)
@@ -137,7 +138,7 @@ class CombatManager:
 
         await update.message.reply_text(result_text)
 
-    async def end_combat(self, update: Update, adventure_id: int, victory: str = None):
+    async def end_combat(self, update: Update, adventure_id: int, victory: str = None, context: ContextTypes.DEFAULT_TYPE = None):
         """End combat and declare outcome."""
         if victory == 'players':
             await update.message.reply_text("🎊 Players have won the combat!")
@@ -152,8 +153,15 @@ class CombatManager:
         # Update adventure status
         self.db.execute_query("UPDATE adventures SET status = 'active' WHERE id = %s", (adventure_id,))
         
-        # Inform Grok
-        await asyncio.to_thread(grok.inform_combat_end, adventure_id, victory or "unknown")
+        # Inform Grok and get continuation
+        continuation_text = await asyncio.to_thread(grok.inform_combat_end, adventure_id, victory or "unknown")
+        
+        # Send the continuation to the chat
+        if context:
+            await send_long_message(update, context, continuation_text)
+        else:
+            # Fallback - send directly
+            await update.message.reply_text(continuation_text[:4000])
 
 # Global Instance
 combat_manager = CombatManager()
