@@ -18,7 +18,7 @@ class ActionHandler:
     async def handle_action_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle /action command from players"""
         if not context.args:
-            await update.message.reply_text("Использование: /action <описание действия>")
+            await context.bot.send_message(chat_id=update.effective_chat.id, text="Использование: /action <описание действия>")
             return
 
         user_id = update.effective_user.id
@@ -37,7 +37,7 @@ class ActionHandler:
         """, (user_id, update.effective_chat.id))
 
         if not character_info:
-            await update.message.reply_text("Вы не участвуете в активном приключении.")
+            await context.bot.send_message(chat_id=update.effective_chat.id, text="Вы не участвуете в активном приключении.")
             return
 
         character = character_info[0]
@@ -68,8 +68,9 @@ class ActionHandler:
             # Проверяем каждое упоминание в квадратных скобках
             for match in matches:
                 if match not in skill_names and match not in spell_names:
-                    await update.message.reply_text(
-                        f"❌ У вашего персонажа нет навыка или заклинания '{match}'. "
+                    await context.bot.send_message(
+                        chat_id=update.effective_chat.id,
+                        text=f"❌ У вашего персонажа нет навыка или заклинания '{match}'. "
                         f"Доступные навыки: {', '.join(skill_names) if skill_names else 'нет'}. "
                         f"Доступные заклинания: {', '.join(spell_names) if spell_names else 'нет'}."
                     )
@@ -84,7 +85,7 @@ class ActionHandler:
             'action': action_text
         }
 
-        await update.message.reply_text(f"✅ Действие записано: {action_text}")
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=f"✅ Действие записано: {action_text}")
 
         # Check if all participants have submitted actions
         await self.check_all_actions_submitted(update, context, adventure_id)
@@ -116,31 +117,62 @@ class ActionHandler:
         """Process all submitted actions with Grok"""
         actions = list(self.pending_actions[adventure_id].values())
         
+        logger.info(f"ACTION DEBUG: Processing actions for adventure {adventure_id}")
+        logger.info(f"ACTION DEBUG: Number of actions: {len(actions)}")
+        for i, action in enumerate(actions):
+            logger.info(f"ACTION DEBUG: Action {i+1}: {action['character_name']} - {action['action']}")
+        
         # Send to Grok
+        logger.info(f"ACTION DEBUG: Sending actions to Grok API...")
         response_text, enemies, xp_reward = await asyncio.to_thread(
             grok.continue_adventure, 
             adventure_id, 
             actions
         )
+        
+        logger.info(f"ACTION DEBUG: Received response from Grok API")
+        logger.info(f"ACTION DEBUG: Response length: {len(response_text)} characters")
+        logger.info(f"ACTION DEBUG: Number of enemies parsed: {len(enemies)}")
+        logger.info(f"ACTION DEBUG: XP reward: {xp_reward}")
+        logger.info(f"ACTION DEBUG: Response contains COMBAT_START: {'***COMBAT_START***' in response_text}")
 
+        # Clean response for players (remove enemy stats)
+        clean_response = grok.clean_response_for_players(response_text)
+        logger.info(f"ACTION DEBUG: Clean response length: {len(clean_response)} characters")
+        
         # Send response to chat
-        await send_long_message(update, context, response_text)
+        logger.info(f"ACTION DEBUG: Sending clean response to chat...")
+        await send_long_message(update, context, clean_response)
 
         # Handle XP reward if any
         if xp_reward > 0:
+            logger.info(f"ACTION DEBUG: Awarding {xp_reward} XP to participants")
             await self.award_experience(update, adventure_id, xp_reward)
+
+        # Check if adventure should end
+        if grok.is_adventure_ended(response_text):
+            logger.info(f"ACTION DEBUG: Adventure end trigger detected, ending adventure {adventure_id}")
+            await self.end_adventure(update, context, adventure_id)
+            return
 
         # Handle combat if enemies were generated
         if enemies:
+            logger.info(f"ACTION DEBUG: Starting combat with {len(enemies)} enemies!")
+            for i, enemy in enumerate(enemies):
+                logger.info(f"ACTION DEBUG: Enemy {i+1}: {enemy['name']} (HP: {enemy['hit_points']})")
             await combat_manager.start_combat(update, context, adventure_id, enemies)
             # Update adventure status to combat
             self.db.execute_query(
                 "UPDATE adventures SET status = 'combat' WHERE id = %s",
                 (adventure_id,)
             )
+            logger.info(f"ACTION DEBUG: Adventure status updated to 'combat'")
+        else:
+            logger.info(f"ACTION DEBUG: No enemies found, continuing normal adventure")
 
         # Clear pending actions
         self.pending_actions[adventure_id] = {}
+        logger.info(f"ACTION DEBUG: Cleared pending actions for adventure {adventure_id}")
 
     async def award_experience(self, update: Update, adventure_id: int, xp_amount: int):
         """Award experience to all participants"""
@@ -178,7 +210,7 @@ class ActionHandler:
         if leveled_up:
             xp_text += "\n\n🎊 Повышения уровня:\n" + "\n".join(leveled_up)
 
-        await update.message.reply_text(xp_text)
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=xp_text)
 
     def calculate_level_from_xp(self, xp: int) -> int:
         """Calculate character level from experience points"""
@@ -191,6 +223,38 @@ class ActionHandler:
         )
 
         return level_data[0]['level'] if level_data else 1
+    
+    async def end_adventure(self, update: Update, context: ContextTypes.DEFAULT_TYPE, adventure_id: int):
+        """Завершает приключение"""
+        if not self.db.connection or not self.db.connection.is_connected():
+            self.db.connect()
+        
+        logger.info(f"ACTION DEBUG: Ending adventure {adventure_id}")
+        
+        # Update adventure status to finished
+        self.db.execute_query(
+            "UPDATE adventures SET status = 'finished' WHERE id = %s",
+            (adventure_id,)
+        )
+        
+        # Clear any pending actions
+        if adventure_id in self.pending_actions:
+            del self.pending_actions[adventure_id]
+        
+        # Clear combat data if any
+        self.db.execute_query(
+            "DELETE FROM combat_participants WHERE adventure_id = %s",
+            (adventure_id,)
+        )
+        
+        # Send adventure end message
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="🎆 Приключение завершено!\n\n"
+                 "Спасибо за игру! Для нового приключения используйте /start_adventure."
+        )
+        
+        logger.info(f"ACTION DEBUG: Adventure {adventure_id} ended successfully")
 
     async def handle_join_group_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle join group callback from character creation"""

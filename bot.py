@@ -13,6 +13,26 @@ from callback_handler import handle_callback_query
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Configure httpx logging to only show errors (4xx, 5xx) and warnings
+httpx_logger = logging.getLogger("httpx")
+httpx_logger.setLevel(logging.WARNING)  # This will only show WARNING and above (including ERROR)
+
+# Alternative approach: Set up a custom filter for httpx
+class HTTPXFilter(logging.Filter):
+    def filter(self, record):
+        # Only show logs that contain error status codes (4xx, 5xx) or are not HTTP request logs
+        if "HTTP Request:" in record.getMessage():
+            # Check if the message contains error codes
+            message = record.getMessage()
+            if any(code in message for code in ["4", "5"]) and any(status in message for status in ["40", "41", "42", "43", "44", "45", "50", "51", "52", "53"]):
+                return True  # Show 4xx and 5xx errors
+            else:
+                return False  # Hide successful 2xx requests
+        return True  # Show all other logs
+
+# Apply the filter to httpx logger
+httpx_logger.addFilter(HTTPXFilter())
+
 # Emoji для характеристик
 STAT_EMOJIS = {
     'strength': '🐂',      # Бык - Сила
@@ -240,10 +260,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     
     if update.effective_chat.id != ALLOWED_CHAT_ID:
         logger.warning(f"Start command blocked - chat {update.effective_chat.id} not allowed (expected: {ALLOWED_CHAT_ID})")
-        await update.message.reply_text("This bot is not allowed in this chat.")
+        await context.bot.send_message(chat_id=update.effective_chat.id, text="This bot is not allowed in this chat.")
         return
         
-    await update.message.reply_text("Welcome to the D&D adventure bot!")
+    await context.bot.send_message(chat_id=update.effective_chat.id, text="Welcome to the D&D adventure bot!")
     logger.info("Start command completed successfully")
 
 async def version_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -271,26 +291,44 @@ async def version_command(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
 🔧 <b>Статус:</b> Работает"""
     
-    await update.message.reply_text(version_text, parse_mode='HTML')
+    await context.bot.send_message(chat_id=update.effective_chat.id, text=version_text, parse_mode='HTML')
     
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handler for /help command"""
     if update.effective_chat.id != ALLOWED_CHAT_ID:
         return
     
-    help_text = """Available commands:\n
-    /start - Start the bot\n
-    /generate - Generate a new D&D character\n
-    /character - Show your current character info\n
-    /party - Show current party members\n
-    /startnewadventure - Start a new adventure\n
-    /terminateadventure - Terminate the current adventure\n
-    /deletecharacter - Delete your character\n
-    /joinadventure - Join an ongoing adventure\n
-    /leaveadventure - Leave the current adventure\n
-    """
+    help_text = """🎲 <b>Справка по командам D&D бота</b>
+
+<b>📊 Персонажи:</b>
+• /generate - Создать нового персонажа D&D
+• /character - Показать информацию о вашем персонаже
+• /deletecharacter - Удалить вашего персонажа
+
+<b>🗺️ Приключения:</b>
+• /startnewadventure - Начать новое приключение
+• /terminateadventure - завершить текущее приключение
+• /joinadventure - Присоединиться к активному приключению
+• /leaveadventure - Покинуть текущее приключение
+
+<b>👥 Группа:</b>
+• /party - Показать состав текущей группы
+• /action [действие] - Выполнить действие в приключении
+
+<b>ℹ️ Информация:</b>
+• /start - Запуск бота
+• /help - Эта справка
+• /version - Информация о версии бота
+
+<b>💡 Подсказки:</b>
+- Создайте персонажа командой /generate перед началом приключения
+- Используйте /party чтобы узнать кто в группе
+- В приключении используйте кнопки или команду /action для действий
+- Бот поддерживает полноценную боевую систему D&D 5e
+
+<i>Удачи в приключениях! 🌟</i>"""
     
-    await update.message.reply_text(help_text)
+    await context.bot.send_message(chat_id=update.effective_chat.id, text=help_text, parse_mode='HTML')
 
 async def delete_character(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Delete user's character"""
@@ -313,7 +351,7 @@ async def delete_character(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     )
     
     if in_adventure:
-        await update.message.reply_text("Cannot delete character while in an active adventure.")
+        await context.bot.send_message(chat_id=update.effective_chat.id, text="Cannot delete character while in an active adventure.")
         return
     
     # Delete character
@@ -323,9 +361,9 @@ async def delete_character(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     )
     
     if result:
-        await update.message.reply_text("Your character has been deleted.")
+        await context.bot.send_message(chat_id=update.effective_chat.id, text="Your character has been deleted.")
     else:
-        await update.message.reply_text("No active character found to delete.")
+        await context.bot.send_message(chat_id=update.effective_chat.id, text="No active character found to delete.")
 
 async def join_adventure(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Join an active adventure"""
@@ -345,7 +383,7 @@ async def join_adventure(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     )
     
     if not character:
-        await update.message.reply_text("You need to generate a character first.")
+        await context.bot.send_message(chat_id=update.effective_chat.id, text="You need to generate a character first.")
         return
     
     # Check if there's an active adventure
@@ -355,7 +393,7 @@ async def join_adventure(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     )
     
     if not adventure:
-        await update.message.reply_text("No active adventure to join.")
+        await context.bot.send_message(chat_id=update.effective_chat.id, text="No active adventure to join.")
         return
     
     # Check if already in adventure
@@ -365,7 +403,7 @@ async def join_adventure(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     )
     
     if already_in:
-        await update.message.reply_text("You are already in this adventure.")
+        await context.bot.send_message(chat_id=update.effective_chat.id, text="You are already in this adventure.")
         return
     
     # Join adventure
@@ -374,7 +412,7 @@ async def join_adventure(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         (adventure[0]['id'], character[0]['id'])
     )
     
-    await update.message.reply_text("You have joined the adventure!")
+    await context.bot.send_message(chat_id=update.effective_chat.id, text="You have joined the adventure!")
 
 async def leave_adventure(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Leave current adventure"""
@@ -397,7 +435,7 @@ async def leave_adventure(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     )
     
     if not participation:
-        await update.message.reply_text("You are not in an active adventure.")
+        await context.bot.send_message(chat_id=update.effective_chat.id, text="You are not in an active adventure.")
         return
     
     # Remove from adventure
@@ -406,7 +444,7 @@ async def leave_adventure(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         (participation[0]['id'],)
     )
     
-    await update.message.reply_text("You have left the adventure.")
+    await context.bot.send_message(chat_id=update.effective_chat.id, text="You have left the adventure.")
 
 async def show_character(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Show current character information"""

@@ -129,8 +129,11 @@ class AdventureManager:
         logger.info(f"FLOW: Received intro_text from Grok, length: {len(intro_text)} characters")
         logger.info(f"FLOW: First 200 characters of intro_text: {intro_text[:200]}...")
 
+        # Clean response for players (remove any combat info if present)
+        clean_intro = grok.clean_response_for_players(intro_text)
+        
         logger.info("FLOW: About to send intro_text to Telegram")
-        await send_long_message(update, context, intro_text)
+        await send_long_message(update, context, clean_intro)
         logger.info("FLOW: Finished sending intro_text to Telegram")
         # Update adventure status
         self.db.execute_query(

@@ -32,7 +32,8 @@ This is a Telegram bot designed to manage Dungeons & Dragons 5e adventures using
    - Run `create_database.py` to set up the database schema and populate initial data.
 
 4. **Run the Bot**:
-   - Use the command `python bot.py` to start the Telegram bot.
+   - Use the command `python start_bot.py` to start the Telegram bot.
+   - For debugging with mock responses: `python start_bot.py mock` (see MOCK_API_README.md for details)
 
 ## Commands
 

@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """
 Alternative bot startup script to avoid event loop issues
+Usage: 
+  python start_bot.py          # Normal mode with real Grok API
+  python start_bot.py mock     # Mock mode for debugging
 """
 
 import logging
@@ -12,7 +15,24 @@ from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandle
 # Add current directory to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from config import TELEGRAM_BOT_TOKEN, ALLOWED_CHAT_ID
+# Check for mock mode
+MOCK_MODE = len(sys.argv) > 1 and sys.argv[1].lower() == 'mock'
+
+if MOCK_MODE:
+    print("\n🧪 MOCK MODE ACTIVATED 🧪")
+    print("Bot will use mock Grok API responses from mock_responses/ directory")
+    print("Make sure mock_grok_api.py is running on localhost:5001")
+    print("-" * 50)
+    
+    # Override config for mock mode
+    import config
+    config.GROK_API_URL = "http://localhost:5001/v1/chat/completions"
+    config.GROK_API_TOKEN = "mock-token"
+    config.GROK_MODEL = "mock-grok"
+    
+    from config import TELEGRAM_BOT_TOKEN, ALLOWED_CHAT_ID
+else:
+    from config import TELEGRAM_BOT_TOKEN, ALLOWED_CHAT_ID
 from character_generation import character_gen
 from adventure_manager import adventure_manager
 from database import get_db

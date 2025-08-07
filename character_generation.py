@@ -5,6 +5,7 @@ from typing import Dict, List, Tuple, Optional
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from database import get_db
+from armor_utils import update_character_ac
 
 logger = logging.getLogger(__name__)
 
@@ -1079,6 +1080,9 @@ class CharacterGenerator:
                             "INSERT INTO character_spells (character_id, spell_id) VALUES (%s, %s)",
                             (character_id, spell['id'])
                         )
+                
+                # Обновляем AC персонажа с учетом доспехов и ловкости
+                update_character_ac(character_id)
         
         # Устанавливаем финальное состояние для отображения полной информации
         char_data['step'] = 'finalized'

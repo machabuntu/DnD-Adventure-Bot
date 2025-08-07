@@ -1,9 +1,12 @@
 import logging
+import random
 from telegram import Update
 from telegram.ext import ContextTypes
 from character_generation import character_gen
 from adventure_manager import adventure_manager
 from action_handler import action_handler
+from database import get_db
+from dice_utils import roll_d20, roll_dice, roll_dice_detailed, is_critical_hit, is_critical_miss, calculate_modifier
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +48,8 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
     # Combat action callbacks
     elif query.data.startswith('action_'):
         await handle_combat_action(update, context)
+    elif query.data.startswith('target_'):
+        await handle_target_selection(update, context)
     
     else:
         await query.answer("Неизвестная команда")
@@ -54,19 +59,165 @@ async def handle_combat_action(update: Update, context: ContextTypes.DEFAULT_TYP
     query = update.callback_query
     action_parts = query.data.split('_')
     
-    if len(action_parts) < 3:
+    if len(action_parts) < 5:
         await query.answer("Неверный формат действия")
+        logger.error(f"Invalid combat action format: {query.data}")
         return
     
     action_type = action_parts[1]  # attack, spell, pass
     character_id = int(action_parts[2])
+    adventure_id = int(action_parts[3])
+    turn_index = int(action_parts[4])
     
-    # Here you would implement specific combat actions
+    logger.info(f"COMBAT DEBUG: Processing action {action_type} for character {character_id} in adventure {adventure_id}, turn {turn_index}")
+    
+    db = get_db()
+    if not db.connection or not db.connection.is_connected():
+        db.connect()
+    
+    # Handle the specific combat action
     if action_type == 'attack':
-        await query.edit_message_text(f"⚔️ Персонаж атакует!")
+        # Show target selection instead of immediate attack
+        from combat_manager import combat_manager
+        await combat_manager.display_attack_targets(update, character_id, adventure_id, turn_index)
+        await query.answer()
+        return  # Don't advance turn yet, wait for target selection
     elif action_type == 'spell':
-        await query.edit_message_text(f"✨ Персонаж использует заклинание!")
+        await query.edit_message_text(f"✨ Персонаж использует заклинание! (пока не реализовано)")
     elif action_type == 'pass':
         await query.edit_message_text(f"⏭️ Персонаж пропускает ход")
     
     await query.answer()
+    
+    # Import combat_manager here to avoid circular imports
+    from combat_manager import combat_manager
+    
+    # Move to the next turn (except for attack, which handles it after target selection)
+    if action_type != 'attack':
+        await combat_manager.next_turn(update, context, adventure_id, turn_index)
+
+async def handle_target_selection(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle target selection and perform the character's attack."""
+    query = update.callback_query
+    action_parts = query.data.split('_')
+    
+    if len(action_parts) < 5:
+        await query.answer("Неверный формат цели")
+        logger.error(f"Invalid target selection format: {query.data}")
+        return
+    
+    character_id = int(action_parts[1])
+    adventure_id = int(action_parts[2])
+    turn_index = int(action_parts[3])
+    target_id = int(action_parts[4])
+    
+    logger.info(f"COMBAT DEBUG: Character {character_id} selected target {target_id} in adventure {adventure_id}")
+    
+    db = get_db()
+    if not db.connection or not db.connection.is_connected():
+        db.connect()
+    
+    # Perform the attack with the selected target
+    await perform_character_attack(query, character_id, adventure_id, target_id, db)
+    
+    # Advance the turn
+    from combat_manager import combat_manager
+    await combat_manager.next_turn(update, context, adventure_id, turn_index)
+
+async def perform_character_attack(query, character_id: int, adventure_id: int, target_id: int, db):
+    """Perform a character attack against a specific target."""
+    # Get character data
+    char_query = "SELECT * FROM characters WHERE id = %s"
+    char_data = db.execute_query(char_query, (character_id,))
+    
+    if not char_data:
+        await query.edit_message_text("❌ Ошибка: персонаж не найден")
+        return
+    
+    character = char_data[0]
+    char_name = character['name']
+    
+    # Get target enemy data
+    enemy_query = "SELECT * FROM enemies WHERE id = %s AND hit_points > 0"
+    enemy_data = db.execute_query(enemy_query, (target_id,))
+    
+    if not enemy_data:
+        await query.edit_message_text("❌ Ошибка: цель не найдена или уже повержена")
+        return
+    
+    target = enemy_data[0]
+    
+    # Get character's weapon/attack info - for simplicity, use strength modifier for melee attacks
+    strength_mod = calculate_modifier(character.get('strength', 10))
+    proficiency_bonus = 2  # Simplified proficiency bonus
+    attack_bonus = strength_mod + proficiency_bonus
+    
+    # Use enemy's stored AC (calculated when enemy was created)
+    target_ac = target['armor_class'] or 12  # Default AC if not set
+    
+    # Perform attack roll
+    attack_roll_result, attack_breakdown = roll_d20(attack_bonus)
+    raw_roll = attack_roll_result - attack_bonus  # Get the raw d20 roll
+    
+    result_text = f"⚔️ {char_name} атакует {target['name']}!\n"
+    result_text += f"🎲 Бросок атаки: {attack_breakdown} против AC {target_ac}"
+    
+    # Check for critical hit/miss
+    if is_critical_hit(raw_roll):
+        result_text += f"\n🎯 КРИТИЧЕСКОЕ ПОПАДАНИЕ! (натуральная 20)"
+        # Double damage dice on crit - roll twice and combine
+        total1, rolls1, modifier1, _ = roll_dice_detailed('1d8')
+        total2, rolls2, modifier2, _ = roll_dice_detailed('1d8')
+        
+        # Combine all rolls and add strength modifier
+        all_rolls = rolls1 + rolls2
+        total_damage = sum(all_rolls) + strength_mod
+        
+        # Create detailed breakdown
+        rolls_str = " + ".join(map(str, all_rolls))
+        damage_text = f"{rolls_str} + {strength_mod} = {total_damage}"
+        result_text += f"\n💥 Урон: {damage_text} урона"
+        
+        # Apply damage
+        new_hp = max(0, target['hit_points'] - total_damage)
+        db.execute_query("UPDATE enemies SET hit_points = %s WHERE id = %s", 
+                         (new_hp, target['id']))
+        # DO NOT show enemy HP for player attacks
+        
+        # Check if enemy is defeated
+        if new_hp <= 0:
+            result_text += f"\n💀 {target['name']} повержен!"
+        
+    elif is_critical_miss(raw_roll):
+        result_text += f"\n💨 КРИТИЧЕСКИЙ ПРОМАХ! (натуральная 1)"
+        
+    elif attack_roll_result >= target_ac:
+        result_text += f"\n✅ ПОПАДАНИЕ!"
+        # Calculate damage (1d8 + strength modifier for simplicity)
+        damage_result, damage_breakdown = roll_dice('1d8')
+        total_damage = damage_result + strength_mod
+        result_text += f"\n💥 Урон: {damage_breakdown} + {strength_mod} = {total_damage} урона"
+        
+        # Apply damage
+        new_hp = max(0, target['hit_points'] - total_damage)
+        db.execute_query("UPDATE enemies SET hit_points = %s WHERE id = %s", 
+                         (new_hp, target['id']))
+        # DO NOT show enemy HP for player attacks
+        
+        # Check if enemy is defeated
+        if new_hp <= 0:
+            result_text += f"\n💀 {target['name']} повержен!"
+            
+    else:
+        result_text += f"\n❌ ПРОМАХ!"
+    
+    await query.edit_message_text(result_text)
+    
+    # Check if all enemies are defeated
+    alive_enemies_query = "SELECT COUNT(*) as count FROM enemies WHERE adventure_id = %s AND hit_points > 0"
+    alive_enemies = db.execute_query(alive_enemies_query, (adventure_id,))
+    
+    if alive_enemies and alive_enemies[0]['count'] == 0:
+        # Import combat_manager here to avoid circular imports
+        from combat_manager import combat_manager
+        await combat_manager.end_combat(query, adventure_id, victory='players')

@@ -85,6 +85,7 @@ class DatabaseManager:
             "DROP TABLE IF EXISTS character_skills",
             "DROP TABLE IF EXISTS character_equipment",
             "DROP TABLE IF EXISTS combat_participants",
+            "DROP TABLE IF EXISTS enemy_attacks",
             "DROP TABLE IF EXISTS enemies",
             "DROP TABLE IF EXISTS chat_history",
             "DROP TABLE IF EXISTS characters",
@@ -328,6 +329,17 @@ class DatabaseManager:
                 experience_reward INT DEFAULT 0,
                 is_alive BOOLEAN DEFAULT TRUE,
                 FOREIGN KEY (adventure_id) REFERENCES adventures(id) ON DELETE CASCADE
+            )
+            """,
+            
+            """
+            CREATE TABLE enemy_attacks (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                enemy_id INT,
+                name VARCHAR(100),
+                damage VARCHAR(20),
+                bonus INT,
+                FOREIGN KEY (enemy_id) REFERENCES enemies(id) ON DELETE CASCADE
             )
             """,
             

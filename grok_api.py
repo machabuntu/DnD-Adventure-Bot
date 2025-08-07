@@ -41,16 +41,20 @@ class GrokAPI:
         
         2. НАГРАЖДЕНИЕ ОПЫТОМ: Если персонажи совершают важные свершения вне боя, включи в ответ фразу "***XP_REWARD: [количество опыта]***"
         
-        3. СТРУКТУРА ОТВЕТОВ: Всегда пиши захватывающие описания, создавай атмосферу фэнтези мира D&D.
+        3. КОНЕЦ ПРИКЛЮЧЕНИЯ: Если приключение завершено (игроки достигли цели, все игроки погибли, или ты считаешь, что история логично завершилась), обязательно включи в ответ фразу "***ADVENTURE_END***". Используй этот триггер в двух случаях:
+           - После боя ты получил информацию о том, что сражение закончилось поражением всех игроков
+           - Ты считаешь, что приключение завершено и игроки добились своей цели или история логично подошла к концу
         
-        4. ПЕРСОНАЖИ: Помни информацию о персонажах и их способностях. Адаптируй приключения под состав группы.
+        4. СТРУКТУРА ОТВЕТОВ: Всегда пиши захватывающие описания, создавай атмосферу фэнтези мира D&D.
         
-        5. СМЕРТЬ ПЕРСОНАЖЕЙ: Если персонаж умирает в бою, больше не упоминай его в дальнейшем повествовании.
+        5. ПЕРСОНАЖИ: Помни информацию о персонажах и их способностях. Адаптируй приключения под состав группы.
         
-        6. НАВЫКИ И ЗАКЛИНАНИЯ: Если в запросе указано, что тот или иной персонаж использует навык или заклинание, считай, что у него оно всегда было.
+        6. СМЕРТЬ ПЕРСОНАЖЕЙ: Если персонаж умирает в бою, больше не упоминай его в дальнейшем повествовании.
+        
+        7. НАВЫКИ И ЗАКЛИНАНИЯ: Если в запросе указано, что тот или иной персонаж использует навык или заклинание, считай, что у него оно всегда было.
         
         Создавай интересные приключения с загадками, ролевыми моментами, исследованием и боевыми столкновениями!
-        Не заканчивай ответы, предложением вариантов действий.
+        Не заканчивай ответы предложением вариантов действий.
         """
     
     def send_request(self, messages: List[Dict[str, str]]) -> Dict[str, Any]:
@@ -68,6 +72,14 @@ class GrokAPI:
             logger.info(f"Model: {self.model}")
             logger.info(f"Messages count: {len(messages)}")
             logger.info(f"Total characters in messages: {sum(len(msg['content']) for msg in messages)}")
+            
+            # Log full request content
+            logger.info("=== FULL GROK REQUEST ===")
+            for i, message in enumerate(messages):
+                logger.info(f"Message {i+1} ({message['role']}):")
+                logger.info(f"{message['content']}")
+                logger.info("---")
+            logger.info("=== END GROK REQUEST ===")
             
             # Try with longer timeout and session for connection reuse
             with requests.Session() as session:
@@ -264,39 +276,110 @@ class GrokAPI:
         logger.info("FLOW: Finished saving messages to database, returning response_text")
         
         # Анализируем ответ на предмет боя и опыта
+        logger.info(f"COMBAT DEBUG: Checking response for combat triggers...")
+        logger.info(f"COMBAT DEBUG: Response contains COMBAT_START: {'***COMBAT_START***' in response_text}")
+        if "***COMBAT_START***" in response_text:
+            logger.info(f"COMBAT DEBUG: Found COMBAT_START trigger in response!")
+            combat_start_pos = response_text.find("***COMBAT_START***")
+            logger.info(f"COMBAT DEBUG: COMBAT_START position: {combat_start_pos}")
+            # Показываем часть текста вокруг триггера
+            start_pos = max(0, combat_start_pos - 100)
+            end_pos = min(len(response_text), combat_start_pos + 500)
+            logger.info(f"COMBAT DEBUG: Text around COMBAT_START: ...{response_text[start_pos:end_pos]}...")
+        else:
+            logger.info(f"COMBAT DEBUG: No COMBAT_START trigger found in response")
+        
         enemies_data = self.parse_enemies(response_text, adventure_id)
         xp_reward = self.parse_xp_reward(response_text)
         
+        logger.info(f"COMBAT DEBUG: Parsed {len(enemies_data)} enemies from response")
+        if enemies_data:
+            for i, enemy in enumerate(enemies_data):
+                logger.info(f"COMBAT DEBUG: Enemy {i+1}: {enemy['name']} (HP: {enemy['hit_points']})")
+        
         return response_text, enemies_data, xp_reward
+    
+    def clean_response_for_players(self, text: str) -> str:
+        """Убирает из ответа информацию о врагах и триггеры, которые игроки не должны видеть"""
+        clean_text = text
+        
+        # Убираем триггеры опыта и окончания приключения
+        import re
+        clean_text = re.sub(r'\*\*\*XP_REWARD: \d+\*\*\*', '', clean_text)
+        clean_text = re.sub(r'\*\*\*ADVENTURE_END\*\*\*', '', clean_text)
+        
+        # Убираем боевые блоки, если есть
+        if "***COMBAT_START***" in clean_text:
+            combat_start_index = clean_text.find("***COMBAT_START***")
+            clean_text = clean_text[:combat_start_index].strip()
+        
+        return clean_text.strip()
     
     def parse_enemies(self, text: str, adventure_id: int) -> List[Dict]:
         """Парсит данные о врагах из ответа Grok"""
+        logger.info(f"PARSE DEBUG: Starting enemy parsing...")
         if "***COMBAT_START***" not in text:
+            logger.info(f"PARSE DEBUG: No COMBAT_START found, returning empty list")
             return []
         
         enemies = []
         
+        # Получаем часть текста после COMBAT_START
+        combat_start_pos = text.find("***COMBAT_START***")
+        combat_text = text[combat_start_pos:]
+        logger.info(f"PARSE DEBUG: Combat text length: {len(combat_text)} characters")
+        logger.info(f"PARSE DEBUG: Combat text: {combat_text}")
+        
         # Ищем блоки с противниками
-        enemy_pattern = r"ENEMY: (.+?)\nHP: (\d+)\nSTR: (\d+) \(мод: ([+-]?\d+)\)\nDEX: (\d+) \(мод: ([+-]?\d+)\)\nCON: (\d+) \(мод: ([+-]?\d+)\)\nINT: (\d+) \(мод: ([+-]?\d+)\)\nWIS: (\d+) \(мод: ([+-]?\d+)\)\nCHA: (\d+) \(мод: ([+-]?\d+)\)\nATTACK: (.+?) \((.+?), бонус к атаке: ([+-]?\d+)\)\nXP: (\d+)"
+        # Новый подход: парсим каждый блок врага отдельно
+        enemy_blocks = re.split(r'(?=ENEMY:)', combat_text)[1:]  # Убираем первый пустой элемент
+        logger.info(f"PARSE DEBUG: Found {len(enemy_blocks)} enemy blocks")
         
-        matches = re.findall(enemy_pattern, text)
-        
-        for match in matches:
+        for i, block in enumerate(enemy_blocks):
+            logger.info(f"PARSE DEBUG: Processing enemy block {i+1}: {block[:200]}...")
+            
+            # Парсим основные характеристики врага
+            enemy_match = re.search(r"ENEMY: (.+?)\nHP: (\d+)\nSTR: (\d+) \(мод: ([+-]?\d+)\)\nDEX: (\d+) \(мод: ([+-]?\d+)\)\nCON: (\d+) \(мод: ([+-]?\d+)\)\nINT: (\d+) \(мод: ([+-]?\d+)\)\nWIS: (\d+) \(мод: ([+-]?\d+)\)\nCHA: (\d+) \(мод: ([+-]?\d+)\)", block, re.DOTALL)
+            
+            if not enemy_match:
+                logger.warning(f"PARSE DEBUG: Could not parse enemy stats from block {i+1}")
+                continue
+            
+            # Парсим все атаки
+            attack_matches = re.findall(r"ATTACK: (.+?) \((.+?), бонус к атаке: ([+-]?\d+)\)", block)
+            logger.info(f"PARSE DEBUG: Found {len(attack_matches)} attacks for enemy {i+1}")
+            
+            # Парсим опыт
+            xp_match = re.search(r"XP: (\d+)", block)
+            if not xp_match:
+                logger.warning(f"PARSE DEBUG: Could not parse XP from block {i+1}")
+                continue
+            
             enemy_data = {
-                'name': match[0].strip(),
-                'hit_points': int(match[1]),
-                'max_hit_points': int(match[1]),
-                'strength': int(match[2]),
-                'dexterity': int(match[4]),
-                'constitution': int(match[6]),
-                'intelligence': int(match[8]),
-                'wisdom': int(match[10]),
-                'charisma': int(match[12]),
-                'attack_name': match[14].strip(),
-                'attack_damage': match[15].strip(),
-                'attack_bonus': int(match[16]),
-                'experience_reward': int(match[17])
+                'name': enemy_match.group(1).strip(),
+                'hit_points': int(enemy_match.group(2)),
+                'max_hit_points': int(enemy_match.group(2)),
+                'strength': int(enemy_match.group(3)),
+                'dexterity': int(enemy_match.group(5)),
+                'constitution': int(enemy_match.group(7)),
+                'intelligence': int(enemy_match.group(9)),
+                'wisdom': int(enemy_match.group(11)),
+                'charisma': int(enemy_match.group(13)),
+                'experience_reward': int(xp_match.group(1)),
+                'armor_class': 12 + (int(enemy_match.group(6)) if int(enemy_match.group(6)) > 0 else 0)  # AC = 12 + DEX mod if positive
             }
+            
+            # Используем первую атаку для совместимости со старой схемой
+            if attack_matches:
+                enemy_data['attack_name'] = attack_matches[0][0].strip()
+                enemy_data['attack_damage'] = attack_matches[0][1].strip()
+                enemy_data['attack_bonus'] = int(attack_matches[0][2])
+            else:
+                enemy_data['attack_name'] = "Удар"
+                enemy_data['attack_damage'] = "1d4"
+                enemy_data['attack_bonus'] = 0
+            
+            logger.info(f"PARSE DEBUG: Enemy data: {enemy_data['name']} with {len(attack_matches)} attacks")
             
             # Сохраняем врага в базу данных
             if not self.db.connection or not self.db.connection.is_connected():
@@ -305,18 +388,26 @@ class GrokAPI:
             self.db.execute_query("""
                 INSERT INTO enemies (adventure_id, name, hit_points, max_hit_points, 
                                    strength, dexterity, constitution, intelligence, wisdom, charisma,
-                                   attack_name, attack_damage, attack_bonus, experience_reward)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                                   attack_name, attack_damage, attack_bonus, experience_reward, armor_class)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (adventure_id, enemy_data['name'], enemy_data['hit_points'], 
                   enemy_data['max_hit_points'], enemy_data['strength'], enemy_data['dexterity'],
                   enemy_data['constitution'], enemy_data['intelligence'], enemy_data['wisdom'],
                   enemy_data['charisma'], enemy_data['attack_name'], enemy_data['attack_damage'],
-                  enemy_data['attack_bonus'], enemy_data['experience_reward']))
+                  enemy_data['attack_bonus'], enemy_data['experience_reward'], enemy_data['armor_class']))
             
             # Получаем ID созданного врага
             enemy_id_result = self.db.execute_query("SELECT LAST_INSERT_ID() as id")
             if enemy_id_result:
                 enemy_data['id'] = enemy_id_result[0]['id']
+                
+                # Сохраняем все атаки в отдельную таблицу
+                for attack_name, attack_damage, attack_bonus in attack_matches:
+                    self.db.execute_query(
+                        "INSERT INTO enemy_attacks (enemy_id, name, damage, bonus) VALUES (%s, %s, %s, %s)",
+                        (enemy_data['id'], attack_name.strip(), attack_damage.strip(), int(attack_bonus))
+                    )
+                    logger.info(f"PARSE DEBUG: Saved attack: {attack_name} ({attack_damage}, +{attack_bonus})")
             
             enemies.append(enemy_data)
         
@@ -332,16 +423,45 @@ class GrokAPI:
         
         return 0
     
+    def is_adventure_ended(self, text: str) -> bool:
+        """Проверяет, содержит ли текст триггер окончания приключения"""
+        return "***ADVENTURE_END***" in text
+    
     def inform_combat_end(self, adventure_id: int, combat_result: str, dead_characters: List[str] = None):
         """Информирует Grok об окончании боя"""
         messages = self.get_conversation_history(adventure_id)
         
-        combat_info = f"Сражение завершено. Результат: {combat_result}"
-        
-        if dead_characters:
-            combat_info += f" Погибшие персонажи (больше не упоминай их): {', '.join(dead_characters)}"
-        
-        combat_info += " Продолжи приключение."
+        # Формируем развернутое сообщение в зависимости от результата
+        if combat_result == "enemies":
+            # Враги победили
+            combat_info = (
+                "Сражение завершилось поражением всех игроков. Враги победили. "
+                "Опиши трагичное окончание приключения с поражением героев. "
+                "После описания обязательно добавь триггер ***ADVENTURE_END***, "
+                "чтобы официально завершить приключение."
+            )
+        elif combat_result == "players":
+            if dead_characters:
+                # Игроки победили, но есть потери
+                dead_list = ", ".join(dead_characters)
+                combat_info = (
+                    f"Сражение завершилось победой игроков, но не без потерь! "
+                    f"Погибшие персонажи (больше не упоминай их в дальнейшем повествовании): {dead_list}. "
+                    "Опиши победу с оттенком горечи от потери спутников, "
+                    "а затем продолжи приключение для оставшихся в живых персонажей."
+                )
+            else:
+                # Полная победа без потерь
+                combat_info = (
+                    "Сражение завершилось полной победой игроков! Все персонажи остались живы. "
+                    "Опиши их триумф и продолжи приключение."
+                )
+        else:
+            # Неопределенный результат (например, ничья)
+            combat_info = (
+                f"Сражение завершилось с неопределенным результатом ({combat_result}). "
+                "Опиши окончание боя и продолжи приключение."
+            )
         
         messages.append({
             "role": "user",
