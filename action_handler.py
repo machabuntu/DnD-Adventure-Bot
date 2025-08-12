@@ -6,6 +6,7 @@ from database import get_db
 from grok_api import grok
 from combat_manager import combat_manager
 from telegram_utils import send_long_message
+from spell_slot_manager import spell_slot_manager
 import asyncio
 
 logger = logging.getLogger(__name__)
@@ -56,14 +57,16 @@ class ActionHandler:
             )
             skill_names = [skill['skill_name'] for skill in character_skills] if character_skills else []
             
-            # Получаем заклинания персонажа
+            # Получаем заклинания персонажа с уровнем
             character_spells = self.db.execute_query(
-                "SELECT s.name FROM character_spells cs "
+                "SELECT s.name, s.level, s.id FROM character_spells cs "
                 "JOIN spells s ON cs.spell_id = s.id "
                 "WHERE cs.character_id = %s",
                 (character_id,)
             )
-            spell_names = [spell['name'] for spell in character_spells] if character_spells else []
+            spell_data = {spell['name']: {'level': spell['level'], 'id': spell['id']} 
+                         for spell in character_spells} if character_spells else {}
+            spell_names = list(spell_data.keys())
             
             # Проверяем каждое упоминание в квадратных скобках
             for match in matches:
@@ -75,6 +78,30 @@ class ActionHandler:
                         f"Доступные заклинания: {', '.join(spell_names) if spell_names else 'нет'}."
                     )
                     return
+                
+                # Если это заклинание, проверяем наличие слотов
+                if match in spell_names:
+                    spell_level = spell_data[match]['level']
+                    if not spell_slot_manager.has_available_slot(character_id, spell_level):
+                        slot_info = spell_slot_manager.get_spell_slots_info(character_id)
+                        await context.bot.send_message(
+                            chat_id=update.effective_chat.id,
+                            text=f"❌ У вас нет доступных слотов для заклинания '{match}' (уровень {spell_level})!\n\n{slot_info}"
+                        )
+                        return
+            
+            # Расходуем слоты заклинаний (после всех проверок)
+            used_spells = []
+            for match in matches:
+                if match in spell_names:
+                    spell_level = spell_data[match]['level']
+                    used_slot_level = spell_slot_manager.use_spell_slot(character_id, spell_level)
+                    if used_slot_level is not None:
+                        used_spell_text = f"{match}"
+                        if used_slot_level > spell_level:
+                            used_spell_text += f" (использован слот {used_slot_level} уровня)"
+                        used_spells.append(used_spell_text)
+                        logger.info(f"Character {character_id} used spell slot for '{match}'")
 
         # Store the action
         if adventure_id not in self.pending_actions:
@@ -84,8 +111,15 @@ class ActionHandler:
             'character_name': character['name'],
             'action': action_text
         }
+        
+        # Подтверждение действия с информацией об использованных слотах
+        confirmation_text = f"✅ Действие записано: {action_text}"
+        if 'used_spells' in locals() and used_spells:
+            confirmation_text += f"\n🔮 Использованы заклинания: {', '.join(used_spells)}"
+            slot_info = spell_slot_manager.get_spell_slots_info(character_id)
+            confirmation_text += f"\n{slot_info}"
 
-        await context.bot.send_message(chat_id=update.effective_chat.id, text=f"✅ Действие записано: {action_text}")
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=confirmation_text)
 
         # Check if all participants have submitted actions
         await self.check_all_actions_submitted(update, context, adventure_id)
@@ -247,6 +281,12 @@ class ActionHandler:
             (adventure_id,)
         )
         
+        # Also clear accumulated combat metrics for this adventure
+        self.db.execute_query(
+            "DELETE FROM combat_metrics WHERE adventure_id = %s",
+            (adventure_id,)
+        )
+        
         # Send adventure end message
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
@@ -283,14 +323,55 @@ class ActionHandler:
         )
 
         if adventure:
-            # Join the adventure
+            # Join the existing adventure
             self.db.execute_query(
                 "INSERT IGNORE INTO adventure_participants (adventure_id, character_id) VALUES (%s, %s)",
                 (adventure[0]['id'], character[0]['id'])
             )
             await query.edit_message_text(f"✅ {character[0]['name']} присоединился к группе!")
         else:
-            await query.edit_message_text("Нет доступных приключений для присоединения.")
+            # No preparing adventure exists, create a new one automatically
+            logger.info(f"No preparing adventure found, creating new one for user {user_id} in chat {update.effective_chat.id}")
+            
+            # Check if there's already an active adventure
+            active_adventure = self.db.execute_query(
+                "SELECT id FROM adventures WHERE chat_id = %s AND status = 'active'",
+                (update.effective_chat.id,)
+            )
+            
+            if active_adventure:
+                await query.edit_message_text("В этом чате уже есть активное приключение. Сначала завершите его.")
+                return
+                
+            # Create new adventure
+            result = self.db.execute_query(
+                "INSERT INTO adventures (chat_id, status) VALUES (%s, 'preparing')",
+                (update.effective_chat.id,)
+            )
+            
+            if result:
+                # Get the created adventure ID
+                adventure_id_result = self.db.execute_query("SELECT LAST_INSERT_ID() as id")
+                if adventure_id_result:
+                    adventure_id = adventure_id_result[0]['id']
+                    
+                    # Add the character to the new adventure
+                    self.db.execute_query(
+                        "INSERT INTO adventure_participants (adventure_id, character_id) VALUES (%s, %s)",
+                        (adventure_id, character[0]['id'])
+                    )
+                    
+                    await query.edit_message_text(
+                        f"🎉 Создана новая группа!\n"
+                        f"✅ {character[0]['name']} присоединился к группе!\n\n"
+                        f"Пригласите других игроков присоединиться, затем используйте команды для начала приключения."
+                    )
+                    
+                    logger.info(f"Created new adventure {adventure_id} and added character {character[0]['id']} to it")
+                else:
+                    await query.edit_message_text("Ошибка при создании группы.")
+            else:
+                await query.edit_message_text("Ошибка при создании группы.")
 
 # Global instance
 action_handler = ActionHandler()

@@ -1,0 +1,289 @@
+[
+  {
+    "level": 6,
+    "name": "Бурлящий котёл Таши",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Создаёт котёл с зельями выбранной редкости.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Колдун"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 6,
+    "name": "Волшебный сосуд",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Переносит душу в контейнер для овладения телом.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник"
+    ],
+    "saving_throw": "Харизма",
+    "scaling": null
+  },
+  {
+    "level": 6,
+    "name": "Вызов исчадия",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Призывает духа исчадия для боя.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Колдун"
+    ],
+    "saving_throw": null,
+    "scaling": "Там, где блок статистики ссылается на уровень заклинания, используйте уровень ячейки заклинаний."
+  },
+  {
+    "level": 6,
+    "name": "Движение почвы",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Меняет форму земли, создавая или убирая препятствия.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Волшебник",
+      "Друид",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 6,
+    "name": "Дезинтеграция",
+    "base_damage": "10к6 + 40",
+    "damage_type": "Сила",
+    "short_description": "Наносит силовой урон, уничтожая при нуле хитов.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": "Ловкость",
+    "scaling": "Урон увеличивается на 3к6 за каждый уровень ячейки выше 6-го."
+  },
+  {
+    "level": 6,
+    "name": "Истинное зрение",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Даёт истинное зрение на 120 футов.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Колдун",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 6,
+    "name": "Круг смерти",
+    "base_damage": "8к6",
+    "damage_type": "Некротический",
+    "short_description": "Наносит некротический урон в области.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Волшебник",
+      "Колдун"
+    ],
+    "saving_throw": "Телосложение",
+    "scaling": "Урон увеличивается на 2к6 за каждый уровень ячейки выше 6-го."
+  },
+  {
+    "level": 6,
+    "name": "Массовое внушение",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Внушает действия нескольким существам.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Колдун",
+      "Чародей"
+    ],
+    "saving_throw": "Мудрость",
+    "scaling": "Вы можете нацелить заклинание на одно дополнительное существо за каждый уровень ячейки выше 6-го."
+  },
+  {
+    "level": 6,
+    "name": "Непроницаемая стена",
+    "base_damage": "6к10",
+    "damage_type": "Сила",
+    "short_description": "Создаёт стену, наносящую силовой урон.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Волшебник"
+    ],
+    "saving_throw": "Ловкость",
+    "scaling": null
+  },
+  {
+    "level": 6,
+    "name": "Око за око",
+    "base_damage": "4к8",
+    "damage_type": "Некротический",
+    "short_description": "Наносит урон в ответ на атаку.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Колдун"
+    ],
+    "saving_throw": "Телосложение",
+    "scaling": "Урон увеличивается на 1к8 за каждый уровень ячейки выше 6-го."
+  },
+  {
+    "level": 6,
+    "name": "Отвод [Transport via Plants]",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Телепортирует через растения на большие расстояния.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Друид"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 6,
+    "name": "Программируемая иллюзия",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Создаёт программируемую повторяющуюся иллюзию.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Бард",
+      "Волшебник"
+    ],
+    "saving_throw": "Интеллект",
+    "scaling": null
+  },
+  {
+    "level": 6,
+    "name": "Солнечный луч",
+    "base_damage": "6к8",
+    "damage_type": "Излучение",
+    "short_description": "Создаёт луч, наносящий урон и ослепляющий.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Волшебник",
+      "Друид",
+      "Чародей"
+    ],
+    "saving_throw": "Телосложение",
+    "scaling": null
+  },
+  {
+    "level": 6,
+    "name": "Сотворение нежити",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Оживляет трупы как нежить.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Жрец",
+      "Колдун"
+    ],
+    "saving_throw": null,
+    "scaling": "Вы можете оживить дополнительный труп за каждый уровень ячейки выше 6-го."
+  },
+  {
+    "level": 6,
+    "name": "Стражи и обереги",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Создаёт магическую защиту области.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Бард",
+      "Волшебник"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 6,
+    "name": "Сфера неуязвимости",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Блокирует заклинания 5-го уровня и ниже.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": "Уровень блокируемых барьером заклинаний увеличивается на 1 за каждый уровень ячейки выше 6-го."
+  },
+  {
+    "level": 6,
+    "name": "Терновая стена",
+    "base_damage": "7к8",
+    "damage_type": "Колющий",
+    "short_description": "Создаёт стену шипов, наносящую урон.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Друид"
+    ],
+    "saving_throw": "Ловкость",
+    "scaling": "И Колющий, и Рубящий урон увеличивается на 1к8 за каждый уровень ячейки выше 6-го."
+  },
+  {
+    "level": 6,
+    "name": "Хождение по ветру",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Превращает в облако с высокой скоростью.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Друид"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 6,
+    "name": "Цепная молния",
+    "base_damage": "10к8",
+    "damage_type": "Электричество",
+    "short_description": "Поражает молнией несколько целей.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": "Ловкость",
+    "scaling": "Один дополнительный разряд разлетается от первой цели за каждый уровень ячейки выше 6-го."
+  }
+]

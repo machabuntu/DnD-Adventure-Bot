@@ -5,7 +5,10 @@ from typing import Dict, List, Tuple, Optional
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from database import get_db
+from spell_slot_manager import spell_slot_manager
 from armor_utils import update_character_ac
+from achievement_manager import achievement_manager
+from spell_selection import spell_selection_manager
 
 logger = logging.getLogger(__name__)
 
@@ -266,7 +269,34 @@ class CharacterGenerator:
                                 for level in sorted(spells_by_level.keys()):
                                     level_name = "Заговоры" if level == 0 else f"{level} уровень"
                                     spells_list = ", ".join(spells_by_level[level])
-                                    info_text += f"• {level_name}: {spells_list}\n"
+                                    info_text += f"• **{level_name}:** {spells_list}\n"
+                            
+                            # Добавляем информацию о слотах заклинаний
+                            if 'character_id' in char_data:
+                                slots = spell_slot_manager.get_available_slots(char_data['character_id'])
+                            else:
+                                # Получаем слоты из таблицы class_spell_slots
+                                slots_info = self.db.execute_query(
+                                    "SELECT slot_level_1, slot_level_2, slot_level_3 FROM class_spell_slots WHERE class_id = %s AND level = 1",
+                                    (char_data['class_id'],)
+                                )
+                                if slots_info:
+                                    slot_data = slots_info[0]
+                                    slots = {}
+                                    for i in range(1, 4):
+                                        slot_count = slot_data.get(f'slot_level_{i}', 0)
+                                        if slot_count and slot_count > 0:
+                                            slots[i] = (0, slot_count)  # (used, max)
+                                else:
+                                    slots = None
+                            
+                            if slots:
+                                info_text += "\n📊 **Слоты заклинаний:**\n"
+                                for level in sorted(slots.keys()):
+                                    used, max_slots = slots[level]
+                                    available = max_slots - used
+                                    emoji = "🔴" if available == 0 else "🟢" if available == max_slots else "🟡"
+                                    info_text += f"{emoji} **Уровень {level}:** {available}/{max_slots}\n"
                             
             except Exception as e:
                 logger.error(f"Error getting additional character info: {e}")
@@ -984,7 +1014,18 @@ class CharacterGenerator:
             logger.info("User finished equipment purchase")
             # Удаляем окно выбора оружия
             await query.delete_message()
-            await self.finalize_character(update, context)
+            
+            # Проверяем, нужен ли выбор заклинаний
+            if not self.db.connection or not self.db.connection.is_connected():
+                self.db.connect()
+            
+            class_info = self.db.execute_query("SELECT is_spellcaster FROM classes WHERE id = %s", (char_data['class_id'],))
+            if class_info and class_info[0]['is_spellcaster']:
+                # Переходим к выбору заклинаний
+                await self.show_spell_selection(update, context)
+            else:
+                # Завершаем создание персонажа
+                await self.finalize_character(update, context)
         else:
             weapon_id = int(query.data.split('_')[1])
             
@@ -1006,6 +1047,244 @@ class CharacterGenerator:
                     await self.show_weapon_selection(update, context)
                 else:
                     await query.answer("Недостаточно денег!", show_alert=True)
+    
+    async def show_spell_selection(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Показывает выбор заклинаний для магических классов"""
+        char_data = context.user_data['character_generation']
+        class_id = char_data['class_id']
+        
+        if not self.db.connection or not self.db.connection.is_connected():
+            self.db.connect()
+        
+        # Получаем информацию о заговорах и заклинаниях
+        slots_query = """SELECT known_cantrips, known_spells, slot_level_1 
+                        FROM class_spell_slots 
+                        WHERE class_id = %s AND level = 1"""
+        slots_info = self.db.execute_query(slots_query, (class_id,))
+        
+        if not slots_info:
+            # Нет информации о слотах, завершаем создание
+            await self.finalize_character(update, context)
+            return
+        
+        slots = slots_info[0]
+        known_cantrips = slots['known_cantrips'] or 0
+        known_spells = slots['known_spells'] or 0
+        has_spell_slots = (slots['slot_level_1'] or 0) > 0
+        
+        # Инициализируем структуры для выбора
+        char_data['cantrips_to_select'] = known_cantrips
+        char_data['spells_to_select'] = known_spells if has_spell_slots else 0
+        char_data['selected_cantrips'] = []
+        char_data['selected_spells'] = []
+        char_data['step'] = 'cantrip_selection'
+        
+        # Начинаем с выбора заговоров
+        if known_cantrips > 0:
+            await self.show_cantrip_selection(update, context)
+        elif known_spells > 0 and has_spell_slots:
+            char_data['step'] = 'spell_selection'
+            await self.show_spells_selection(update, context)
+        else:
+            await self.finalize_character(update, context)
+    
+    async def show_cantrip_selection(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Показывает выбор заговоров"""
+        char_data = context.user_data['character_generation']
+        class_id = char_data['class_id']
+        
+        if not self.db.connection or not self.db.connection.is_connected():
+            self.db.connect()
+        
+        # Получаем имя класса
+        class_info = self.db.execute_query("SELECT name FROM classes WHERE id = %s", (class_id,))
+        if not class_info:
+            await self.finalize_character(update, context)
+            return
+        
+        class_name = class_info[0]['name']
+        
+        # Получаем доступные заговоры для класса
+        cantrips_query = """SELECT id, name, description 
+                           FROM spells 
+                           WHERE level = 0 AND JSON_CONTAINS(available_classes, %s)
+                           ORDER BY name"""
+        
+        available_cantrips = self.db.execute_query(cantrips_query, (f'"{class_name}"',))
+        
+        if not available_cantrips:
+            # Пробуем альтернативный запрос для старой структуры
+            cantrips_query = """SELECT id, name, description 
+                               FROM spells 
+                               WHERE level = 0 AND available_classes LIKE %s
+                               ORDER BY name"""
+            available_cantrips = self.db.execute_query(cantrips_query, (f'%"{class_name}"%',))
+        
+        if not available_cantrips:
+            # Нет доступных заговоров, переходим к заклинаниям
+            if char_data['spells_to_select'] > 0:
+                char_data['step'] = 'spell_selection'
+                await self.show_spells_selection(update, context)
+            else:
+                await self.finalize_character(update, context)
+            return
+        
+        selected_count = len(char_data['selected_cantrips'])
+        total_count = char_data['cantrips_to_select']
+        
+        if selected_count >= total_count:
+            # Все заговоры выбраны
+            if char_data['spells_to_select'] > 0:
+                char_data['step'] = 'spell_selection'
+                await self.show_spells_selection(update, context)
+            else:
+                await self.finalize_character(update, context)
+            return
+        
+        # Фильтруем уже выбранные
+        available_for_selection = [c for c in available_cantrips 
+                                  if c['id'] not in char_data['selected_cantrips']]
+        
+        keyboard = []
+        for cantrip in available_for_selection:
+            keyboard.append([InlineKeyboardButton(
+                f"🔮 {cantrip['name']}",
+                callback_data=f"cantrip_{cantrip['id']}"
+            )])
+        
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        text = f"""🪄 <b>Выбор заговоров</b>
+
+Выбрано: {selected_count}/{total_count}
+"""
+        
+        if char_data['selected_cantrips']:
+            selected_names = []
+            for cantrip_id in char_data['selected_cantrips']:
+                for c in available_cantrips:
+                    if c['id'] == cantrip_id:
+                        selected_names.append(c['name'])
+                        break
+            text += f"✅ Уже выбраны: {', '.join(selected_names)}\n"
+        
+        text += "\nВыберите заговор:"
+        
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=text,
+            reply_markup=reply_markup,
+            parse_mode='HTML'
+        )
+    
+    async def handle_cantrip_selection(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Обрабатывает выбор заговора"""
+        query = update.callback_query
+        await query.answer()
+        
+        char_data = context.user_data['character_generation']
+        cantrip_id = int(query.data.split('_')[1])
+        
+        if cantrip_id not in char_data['selected_cantrips']:
+            char_data['selected_cantrips'].append(cantrip_id)
+        
+        await query.delete_message()
+        await self.show_cantrip_selection(update, context)
+    
+    async def show_spells_selection(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Показывает выбор заклинаний 1 уровня"""
+        char_data = context.user_data['character_generation']
+        class_id = char_data['class_id']
+        
+        if not self.db.connection or not self.db.connection.is_connected():
+            self.db.connect()
+        
+        # Получаем имя класса
+        class_info = self.db.execute_query("SELECT name FROM classes WHERE id = %s", (class_id,))
+        if not class_info:
+            await self.finalize_character(update, context)
+            return
+        
+        class_name = class_info[0]['name']
+        
+        # Получаем доступные заклинания 1 уровня для класса
+        spells_query = """SELECT id, name, description 
+                         FROM spells 
+                         WHERE level = 1 AND JSON_CONTAINS(available_classes, %s)
+                         ORDER BY name"""
+        
+        available_spells = self.db.execute_query(spells_query, (f'"{class_name}"',))
+        
+        if not available_spells:
+            # Пробуем альтернативный запрос
+            spells_query = """SELECT id, name, description 
+                             FROM spells 
+                             WHERE level = 1 AND available_classes LIKE %s
+                             ORDER BY name"""
+            available_spells = self.db.execute_query(spells_query, (f'%"{class_name}"%',))
+        
+        if not available_spells:
+            # Нет доступных заклинаний
+            await self.finalize_character(update, context)
+            return
+        
+        selected_count = len(char_data['selected_spells'])
+        total_count = char_data['spells_to_select']
+        
+        if selected_count >= total_count:
+            # Все заклинания выбраны
+            await self.finalize_character(update, context)
+            return
+        
+        # Фильтруем уже выбранные
+        available_for_selection = [s for s in available_spells 
+                                  if s['id'] not in char_data['selected_spells']]
+        
+        keyboard = []
+        for spell in available_for_selection:
+            keyboard.append([InlineKeyboardButton(
+                f"✨ {spell['name']}",
+                callback_data=f"spell1_{spell['id']}"
+            )])
+        
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        text = f"""📚 <b>Выбор заклинаний 1 уровня</b>
+
+Выбрано: {selected_count}/{total_count}
+"""
+        
+        if char_data['selected_spells']:
+            selected_names = []
+            for spell_id in char_data['selected_spells']:
+                for s in available_spells:
+                    if s['id'] == spell_id:
+                        selected_names.append(s['name'])
+                        break
+            text += f"✅ Уже выбраны: {', '.join(selected_names)}\n"
+        
+        text += "\nВыберите заклинание:"
+        
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=text,
+            reply_markup=reply_markup,
+            parse_mode='HTML'
+        )
+    
+    async def handle_spell_selection(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Обрабатывает выбор заклинания"""
+        query = update.callback_query
+        await query.answer()
+        
+        char_data = context.user_data['character_generation']
+        spell_id = int(query.data.split('_')[1])
+        
+        if spell_id not in char_data['selected_spells']:
+            char_data['selected_spells'].append(spell_id)
+        
+        await query.delete_message()
+        await self.show_spells_selection(update, context)
     
     async def finalize_character(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Завершает создание персонажа"""
@@ -1042,7 +1321,7 @@ class CharacterGenerator:
         character_id = self.db.execute_query("""
             INSERT INTO characters (user_id, name, race_id, origin_id, class_id, level, experience,
                                   strength, dexterity, constitution, intelligence, wisdom, charisma,
-                                  hit_points, max_hit_points, money)
+                                  current_hp, max_hp, money)
             VALUES (%s, %s, %s, %s, %s, 1, 0, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, (user_id, char_data['name'], char_data['race_id'], char_data['origin_id'], char_data['class_id'],
               final_stats['strength'], final_stats['dexterity'], final_stats['constitution'],
@@ -1073,16 +1352,53 @@ class CharacterGenerator:
                 # Добавляем заклинания если класс заклинатель
                 class_info = self.db.execute_query("SELECT is_spellcaster FROM classes WHERE id = %s", (char_data['class_id'],))
                 if class_info and class_info[0]['is_spellcaster']:
-                    # Даем 2 случайных заклинания 0-1 уровня
-                    spells = self.db.execute_query("SELECT id FROM spells WHERE level <= 1 ORDER BY RAND() LIMIT 2")
-                    for spell in spells:
+                    # Инициализируем слоты заклинаний для заклинателя
+                    spell_slot_manager.initialize_character_slots(character_id)
+                    logger.info(f"Initialized spell slots for character {character_id}")
+                    
+                    # Сохраняем выбранные заговоры и заклинания
+                    selected_cantrips = char_data.get('selected_cantrips', [])
+                    selected_spells = char_data.get('selected_spells', [])
+                    
+                    # Сохраняем заговоры
+                    for cantrip_id in selected_cantrips:
                         self.db.execute_query(
                             "INSERT INTO character_spells (character_id, spell_id) VALUES (%s, %s)",
-                            (character_id, spell['id'])
+                            (character_id, cantrip_id)
+                        )
+                    
+                    # Сохраняем заклинания
+                    for spell_id in selected_spells:
+                        self.db.execute_query(
+                            "INSERT INTO character_spells (character_id, spell_id) VALUES (%s, %s)",
+                            (character_id, spell_id)
                         )
                 
                 # Обновляем AC персонажа с учетом доспехов и ловкости
                 update_character_ac(character_id)
+                
+                # Проверяем достижения
+                achievements_text = ""
+                
+                # Достижение за первого персонажа
+                existing_chars = self.db.execute_query(
+                    "SELECT COUNT(*) as count FROM characters WHERE user_id = %s AND id != %s",
+                    (user_id, character_id)
+                )
+                if existing_chars and existing_chars[0]['count'] == 0:
+                    ach = achievement_manager.grant_achievement(user_id, 'first_character', char_data['name'])
+                    if ach:
+                        achievements_text += achievement_manager.format_achievement_notification(ach)
+                
+                # Проверяем достижения за характеристики
+                for stat_name in stat_names:
+                    stat_value = final_stats[stat_name]
+                    ach = achievement_manager.check_stat_achievement(user_id, stat_name, stat_value, char_data['name'])
+                    if ach:
+                        achievements_text += achievement_manager.format_achievement_notification(ach)
+                
+                # Сохраняем текст о достижениях для отображения позже
+                char_data['achievements_text'] = achievements_text
         
         # Устанавливаем финальное состояние для отображения полной информации
         char_data['step'] = 'finalized'
@@ -1104,6 +1420,14 @@ class CharacterGenerator:
             reply_markup=reply_markup,
             parse_mode='Markdown'
         )
+        
+        # Отправляем уведомления о достижениях, если есть
+        if char_data.get('achievements_text'):
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text=char_data['achievements_text'],
+                parse_mode='HTML'
+            )
         
         # Очищаем временные данные
         del context.user_data['character_generation']
@@ -1145,7 +1469,7 @@ class CharacterGenerator:
 👁️ Мудрость: {char['wisdom']} ({self.get_modifier(char['wisdom']):+d})
 💬 Харизма: {char['charisma']} ({self.get_modifier(char['charisma']):+d})
 
-❤️ <b>Хиты:</b> {char['hit_points']}/{char['max_hit_points']}
+❤️ <b>Хиты:</b> {char['current_hp']}/{char['max_hp']}
 💰 <b>Монеты:</b> {char['money']}
         """
         

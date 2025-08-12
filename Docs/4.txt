@@ -1,0 +1,433 @@
+[
+  {
+    "level": 4,
+    "name": "Аура жизни",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Даёт сопротивление некротическому урону и восстанавливает хиты.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Жрец",
+      "Паладин"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 4,
+    "name": "Аура очищения",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Даёт сопротивление яду и иммунитет состояниям.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Жрец",
+      "Паладин"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 4,
+    "name": "Верный пёс Морденкайнена",
+    "base_damage": "4к8",
+    "damage_type": "Сила",
+    "short_description": "Призывает невидимого пса, атакующего врагов.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Волшебник"
+    ],
+    "saving_throw": "Ловкость",
+    "scaling": null
+  },
+  {
+    "level": 4,
+    "name": "Власть над водами",
+    "base_damage": "2к8",
+    "damage_type": "Дробящий",
+    "short_description": "Контролирует воду, создавая водоворот или наводнение.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Волшебник",
+      "Друид",
+      "Жрец"
+    ],
+    "saving_throw": "Сила",
+    "scaling": null
+  },
+  {
+    "level": 4,
+    "name": "Воображаемый убийца",
+    "base_damage": "4к10",
+    "damage_type": "Психический",
+    "short_description": "Создаёт иллюзию, наносящую психический урон.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник"
+    ],
+    "saving_throw": "Мудрость",
+    "scaling": "Урон увеличивается на 1к10 за каждый уровень ячейки выше 4-го."
+  },
+  {
+    "level": 4,
+    "name": "Вызов аберрации",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Призывает духа аберрации для боя.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Колдун"
+    ],
+    "saving_throw": null,
+    "scaling": "Там, где блок статистики ссылается на уровень заклинания, используйте уровень ячейки заклинаний."
+  },
+  {
+    "level": 4,
+    "name": "Вызов конструкта",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Призывает духа конструкта для боя.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник"
+    ],
+    "saving_throw": null,
+    "scaling": "Там, где блок статистики ссылается на уровень заклинания, используйте уровень ячейки заклинаний."
+  },
+  {
+    "level": 4,
+    "name": "Вызов элементаля",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Призывает духа стихии для боя.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Друид",
+      "Следопыт"
+    ],
+    "saving_throw": null,
+    "scaling": "Там, где блок статистики ссылается на уровень заклинания, используйте уровень ячейки заклинаний."
+  },
+  {
+    "level": 4,
+    "name": "Высшая невидимость",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Делает цель невидимой на время.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 4,
+    "name": "Гигантское насекомое",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Превращает насекомых в гигантских союзников.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Друид"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 4,
+    "name": "Изгнание",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Изгоняет существо на другой план.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Жрец",
+      "Колдун",
+      "Паладин",
+      "Чародей"
+    ],
+    "saving_throw": "Харизма",
+    "scaling": "Вы можете нацелить заклинание на одно дополнительное существо за каждый уровень ячейки выше 4-го."
+  },
+  {
+    "level": 4,
+    "name": "Каменная кожа",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Даёт сопротивление немагическому физическому урону.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Друид",
+      "Следопыт",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 4,
+    "name": "Огненный щит",
+    "base_damage": "2к10",
+    "damage_type": "Огонь",
+    "short_description": "Создаёт щит, наносящий урон атакующим.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Волшебник"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 4,
+    "name": "Песнь отдыха",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Усиливает восстановление хитов во время отдыха.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Бард"
+    ],
+    "saving_throw": null,
+    "scaling": "Среднее количество восстанавливаемых Хитов увеличивается на 1к6 за каждый уровень ячейки выше 4-го."
+  },
+  {
+    "level": 4,
+    "name": "Подчинение зверя",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Подчиняет зверя, заставляя его служить.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Друид",
+      "Следопыт"
+    ],
+    "saving_throw": "Мудрость",
+    "scaling": null
+  },
+  {
+    "level": 4,
+    "name": "Полиморф",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Превращает цель в другое существо.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Друид",
+      "Чародей"
+    ],
+    "saving_throw": "Мудрость",
+    "scaling": null
+  },
+  {
+    "level": 4,
+    "name": "Поиск существа",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Определяет направление к известному существу.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Друид",
+      "Жрец",
+      "Паладин",
+      "Следопыт"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 4,
+    "name": "Призыв демона",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Призывает демона для боя.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Колдун"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 4,
+    "name": "Призыв лесных обитателей",
+    "base_damage": "5к8",
+    "damage_type": "Сила",
+    "short_description": "Призывает духов, наносящих урон в ауре.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Друид",
+      "Следопыт"
+    ],
+    "saving_throw": "Мудрость",
+    "scaling": "Урон увеличивается на 1к8 за каждый уровень ячейки выше 4-го."
+  },
+  {
+    "level": 4,
+    "name": "Призыв малых элементалей",
+    "base_damage": "2к8",
+    "damage_type": "Кислота",
+    "short_description": "Призывает духов, усиливающих атаки в ауре.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Волшебник",
+      "Друид"
+    ],
+    "saving_throw": null,
+    "scaling": "Урон увеличивается на 1к8 за каждый уровень ячейки выше 4-го."
+  },
+  {
+    "level": 4,
+    "name": "Принуждение",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Заставляет существ двигаться в указанном направлении.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард"
+    ],
+    "saving_throw": "Мудрость",
+    "scaling": null
+  },
+  {
+    "level": 4,
+    "name": "Свобода перемещения",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Обеспечивает свободу движения и защиту.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Друид",
+      "Жрец",
+      "Следопыт"
+    ],
+    "saving_throw": null,
+    "scaling": "Вы можете нацелить заклинание на одно дополнительное существо за каждый уровень заклинания выше 4-го."
+  },
+  {
+    "level": 4,
+    "name": "Смятение",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Вызывает хаотичное поведение у существ.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Друид",
+      "Чародей"
+    ],
+    "saving_throw": "Мудрость",
+    "scaling": "Радиус Сферы увеличивается на 5 футов за каждый уровень ячейки выше 4-го."
+  },
+  {
+    "level": 4,
+    "name": "Страж веры",
+    "base_damage": "20",
+    "damage_type": "Излучение",
+    "short_description": "Призывает стража, наносящего урон врагам.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Жрец"
+    ],
+    "saving_throw": "Ловкость",
+    "scaling": null
+  },
+  {
+    "level": 4,
+    "name": "Упругий шар Отилюка",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Окружает цель защитной сферой.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник"
+    ],
+    "saving_throw": "Ловкость",
+    "scaling": null
+  },
+  {
+    "level": 4,
+    "name": "Усыхание",
+    "base_damage": "8к8",
+    "damage_type": "Некротический",
+    "short_description": "Наносит некротический урон, особенно растениям.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Друид",
+      "Колдун",
+      "Чародей"
+    ],
+    "saving_throw": "Телосложение",
+    "scaling": "Урон увеличивается на 1к8 за каждый уровень ячейки выше 4-го."
+  },
+  {
+    "level": 4,
+    "name": "Цепкая лоза",
+    "base_damage": "4к8",
+    "damage_type": "Дробящий",
+    "short_description": "Лоза наносит урон и схватывает цель.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Друид",
+      "Следопыт"
+    ],
+    "saving_throw": null,
+    "scaling": "Количество существ, которых лоза может одновременно держать Схваченными, увеличивается на 1 за каждый уровень ячейки выше 4-го."
+  },
+  {
+    "level": 4,
+    "name": "Чёрные щупальца Эварда",
+    "base_damage": "3к6",
+    "damage_type": "Дробящий",
+    "short_description": "Щупальца наносят урон и опутывают.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Волшебник"
+    ],
+    "saving_throw": "Сила",
+    "scaling": null
+  }
+]

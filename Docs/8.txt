@@ -1,0 +1,217 @@
+[
+  {
+    "level": 8,
+    "name": "Антипатия/симпатия",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Притягивает или отталкивает существ определённого вида.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Друид"
+    ],
+    "saving_throw": "Мудрость",
+    "scaling": null
+  },
+  {
+    "level": 8,
+    "name": "Аура святости",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Усиливает спасброски и ослепляет врагов.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Жрец"
+    ],
+    "saving_throw": "Телосложение",
+    "scaling": null
+  },
+  {
+    "level": 8,
+    "name": "Власть над погодой",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Контролирует погоду в радиусе 5 миль.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Волшебник",
+      "Друид",
+      "Жрец"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 8,
+    "name": "Воспламеняющаяся туча",
+    "base_damage": "10к8",
+    "damage_type": "Огонь",
+    "short_description": "Создаёт облако, наносящее урон огнём.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Волшебник",
+      "Друид",
+      "Чародей"
+    ],
+    "saving_throw": "Ловкость",
+    "scaling": null
+  },
+  {
+    "level": 8,
+    "name": "Демиплан",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Создаёт межпространственную комнату.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Колдун",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 8,
+    "name": "Землетрясение",
+    "base_damage": "5к6",
+    "damage_type": "Дробящий",
+    "short_description": "Вызывает землетрясение, наносящее урон и разрушения.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Друид",
+      "Жрец",
+      "Чародей"
+    ],
+    "saving_throw": "Ловкость",
+    "scaling": null
+  },
+  {
+    "level": 8,
+    "name": "Клон",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Создаёт клон для воскрешения.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 8,
+    "name": "Лабиринт",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Затягивает существо в межпространственный лабиринт.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 8,
+    "name": "Массовый полиморф",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Превращает несколько существ в зверей.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": "Мудрость",
+    "scaling": null
+  },
+  {
+    "level": 8,
+    "name": "Слово силы: ошеломление",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Ошеломляет существо с низкими хитами.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Колдун",
+      "Чародей"
+    ],
+    "saving_throw": "Телосложение",
+    "scaling": null
+  },
+  {
+    "level": 8,
+    "name": "Сокрытие разума",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Защищает от психического урона и контроля.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 8,
+    "name": "Солнечный ожог",
+    "base_damage": "12к6",
+    "damage_type": "Излучение",
+    "short_description": "Наносит урон излучением и ослепляет.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Волшебник",
+      "Друид",
+      "Жрец",
+      "Чародей"
+    ],
+    "saving_throw": "Телосложение",
+    "scaling": null
+  },
+  {
+    "level": 8,
+    "name": "Телепатия",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Создаёт телепатическую связь с существом.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 8,
+    "name": "Цунами",
+    "base_damage": "6к10",
+    "damage_type": "Дробящий",
+    "short_description": "Создаёт стену воды, наносящую урон.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Друид"
+    ],
+    "saving_throw": "Сила",
+    "scaling": null
+  }
+]

@@ -1,0 +1,988 @@
+[
+  {
+    "level": 1,
+    "name": "Адское возмездие",
+    "base_damage": "2к10",
+    "damage_type": "Огонь",
+    "short_description": "Окутывает врага зелёным пламенем в ответ на урон.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Колдун"
+    ],
+    "saving_throw": "Ловкость",
+    "scaling": "Урон увеличивается на 1к10 за каждый уровень ячейки выше 1-го."
+  },
+  {
+    "level": 1,
+    "name": "Безмолвный образ",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Создаёт зрительную иллюзию объекта или существа.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 1,
+    "name": "Благословение",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Благословляет цели, добавляя 1к4 к атакам и спасам.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Жрец",
+      "Паладин"
+    ],
+    "saving_throw": null,
+    "scaling": "Вы можете нацелить заклинание на одно дополнительное существо за каждый уровень ячейки выше 1-го."
+  },
+  {
+    "level": 1,
+    "name": "Божественная кара",
+    "base_damage": "2к8",
+    "damage_type": "Излучение",
+    "short_description": "Наносит дополнительный урон излучением после попадания.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Паладин"
+    ],
+    "saving_throw": null,
+    "scaling": "Урон увеличивается на 1к8 за каждый уровень ячейки выше 1-го."
+  },
+  {
+    "level": 1,
+    "name": "Божественное благоволение",
+    "base_damage": "1к4",
+    "damage_type": "Излучение",
+    "short_description": "Атаки оружием наносят дополнительный урон излучением.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Паладин"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 1,
+    "name": "Ведьмин снаряд",
+    "base_damage": "2к12",
+    "damage_type": "Электричество",
+    "short_description": "Создаёт дуговой разряд, наносящий урон электричеством.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Колдун",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": "Урон изначальной атаки заклинанием увеличивается на 1к12 за каждый уровень ячейки выше 1-го."
+  },
+  {
+    "level": 1,
+    "name": "Волна грома",
+    "base_damage": "2к8",
+    "damage_type": "Звук",
+    "short_description": "Испускает волну грома, отталкивая и нанося урон.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Друид",
+      "Чародей"
+    ],
+    "saving_throw": "Телосложение",
+    "scaling": "Урон увеличивается на 1к8 за каждый уровень ячейки выше 1-го."
+  },
+  {
+    "level": 1,
+    "name": "Волшебная стрела",
+    "base_damage": "1к4 + 1",
+    "damage_type": "Сила",
+    "short_description": "Создаёт дротики магической силы, всегда попадающие.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": "Заклинание создает по одному дополнительному дротику за каждый уровень ячейки выше 1-го."
+  },
+  {
+    "level": 1,
+    "name": "Вызов на дуэль",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Вызывает существо на дуэль, ограничивая его атаки.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Паладин"
+    ],
+    "saving_throw": "Мудрость",
+    "scaling": null
+  },
+  {
+    "level": 1,
+    "name": "Героизм",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Наполняет храбростью, даёт иммунитет к страху и хиты.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Паладин"
+    ],
+    "saving_throw": null,
+    "scaling": "Вы можете нацеливать это заклинание на одно дополнительное существо за каждый уровень ячейки выше 1-го."
+  },
+  {
+    "level": 1,
+    "name": "Гневная кара",
+    "base_damage": "1к6",
+    "damage_type": "Некротический",
+    "short_description": "Наносит некротический урон и пугает цель.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Паладин"
+    ],
+    "saving_throw": "Мудрость",
+    "scaling": "Урон увеличивается на 1к6 за каждый уровень ячейки выше 1-го."
+  },
+  {
+    "level": 1,
+    "name": "Град шипов",
+    "base_damage": "1к10",
+    "damage_type": "Колющий",
+    "short_description": "Создаёт град шипов после попадания дальнобойной атакой.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Следопыт"
+    ],
+    "saving_throw": "Ловкость",
+    "scaling": "Урон увеличивается на 1к10 за каждый уровень ячейки выше 1-го."
+  },
+  {
+    "level": 1,
+    "name": "Громовая кара",
+    "base_damage": "2к6",
+    "damage_type": "Звук",
+    "short_description": "Наносит урон звуком и отбрасывает цель.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Паладин"
+    ],
+    "saving_throw": "Сила",
+    "scaling": "Урон увеличивается на 1к6 за каждый уровень ячейки выше 1-го."
+  },
+  {
+    "level": 1,
+    "name": "Диссонирующий шёпот",
+    "base_damage": "3к6",
+    "damage_type": "Психический",
+    "short_description": "Наносит психический урон и заставляет бежать.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Бард"
+    ],
+    "saving_throw": "Мудрость",
+    "scaling": "Урон увеличивается на 1к6 за каждый уровень ячейки выше 1-го."
+  },
+  {
+    "level": 1,
+    "name": "Добряника",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Создаёт ягоды, восстанавливающие хиты и питающие.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Друид",
+      "Следопыт"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 1,
+    "name": "Доспех Агатиса",
+    "base_damage": "5",
+    "damage_type": "Холод",
+    "short_description": "Даёт временные хиты и наносит урон холодом атакующим.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Колдун"
+    ],
+    "saving_throw": null,
+    "scaling": "И урон Холодом, и получаемые Временные хиты увеличиваются на 5 за каждый уровень ячейки выше 1-го."
+  },
+  {
+    "level": 1,
+    "name": "Доспехи мага",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Увеличивает КЗ цели до 13 + модификатор Ловкости.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 1,
+    "name": "Дружба с животными",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Очаровывает зверей на 24 часа.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Друид",
+      "Следопыт"
+    ],
+    "saving_throw": "Мудрость",
+    "scaling": "Вы можете нацелить заклинание на одного дополнительного Зверя за каждый уровень ячейки выше 1-го."
+  },
+  {
+    "level": 1,
+    "name": "Жуткий смех Таши",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Заставляет цель смеяться и падать.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Колдун"
+    ],
+    "saving_throw": "Мудрость",
+    "scaling": "Вы можете нацелить заклинание на одно дополнительное существо за каждый уровень ячейки выше 1-го."
+  },
+  {
+    "level": 1,
+    "name": "Защита от зла и добра",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Защищает от определённых типов существ.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Друид",
+      "Жрец",
+      "Колдун",
+      "Паладин"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 1,
+    "name": "Иллюзорные письмена",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Создаёт иллюзорный текст для выбранных существ.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Колдун"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 1,
+    "name": "Ледяной кинжал",
+    "base_damage": "1к10",
+    "damage_type": "Колющий",
+    "short_description": "Метает ледяной осколок, взрывающийся холодом.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Волшебник",
+      "Друид",
+      "Чародей"
+    ],
+    "saving_throw": "Ловкость",
+    "scaling": "Урон Холодом увеличивается на 1к6 за каждый уровень ячейки выше 1-го."
+  },
+  {
+    "level": 1,
+    "name": "Лечащее слово",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Восстанавливает хиты на расстоянии.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Друид",
+      "Жрец"
+    ],
+    "saving_throw": null,
+    "scaling": "Лечение увеличивается на 2к4 за каждый уровень ячейки выше 1-го."
+  },
+  {
+    "level": 1,
+    "name": "Лечение ран",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Восстанавливает хиты касанием.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Друид",
+      "Жрец",
+      "Паладин",
+      "Следопыт"
+    ],
+    "saving_throw": null,
+    "scaling": "Лечение увеличивается на 2к8 за каждый уровень ячейки выше 1-го."
+  },
+  {
+    "level": 1,
+    "name": "Луч болезни",
+    "base_damage": "2к8",
+    "damage_type": "Яд",
+    "short_description": "Наносит урон ядом и отравляет цель.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": "Урон увеличивается на 1к8 за каждый уровень ячейки выше 1-го."
+  },
+  {
+    "level": 1,
+    "name": "Маскировка",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Изменяет внешний облик, включая одежду.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 1,
+    "name": "Метка охотника",
+    "base_damage": "1к6",
+    "damage_type": "Сила",
+    "short_description": "Помечает цель, нанося дополнительный урон и помогая отслеживать.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Следопыт"
+    ],
+    "saving_throw": null,
+    "scaling": "При сотворении заклинания c ячейкой 3-го или 4-го уровня вы можете поддерживать Концентрацию до 8 часов, а с ячейкой заклинаний 5-го уровня или выше — до 24 часов."
+  },
+  {
+    "level": 1,
+    "name": "Нанесение ран",
+    "base_damage": "2к10",
+    "damage_type": "Некротический",
+    "short_description": "Наносит некротический урон касанием.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Жрец"
+    ],
+    "saving_throw": "Телосложение",
+    "scaling": "Урон увеличивается на 1к10 за каждый уровень ячейки выше 1-го."
+  },
+  {
+    "level": 1,
+    "name": "Направляющий снаряд",
+    "base_damage": "4к6",
+    "damage_type": "Излучение",
+    "short_description": "Наносит урон излучением и даёт преимущество следующей атаке.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Жрец"
+    ],
+    "saving_throw": null,
+    "scaling": "Урон увеличивается на 1к6 за каждый уровень ячейки выше 1-го."
+  },
+  {
+    "level": 1,
+    "name": "Невидимый слуга",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Создаёт невидимую силу для простых задач.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Колдун"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 1,
+    "name": "Обнаружение болезней и яда",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Обнаруживает яды, болезни и заражения поблизости.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Друид",
+      "Жрец",
+      "Паладин",
+      "Следопыт"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 1,
+    "name": "Обнаружение зла и добра",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Обнаруживает определённые типы существ поблизости.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Жрец",
+      "Паладин"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 1,
+    "name": "Обнаружение магии",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Обнаруживает магические эффекты поблизости.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Друид",
+      "Жрец",
+      "Колдун",
+      "Паладин",
+      "Следопыт",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 1,
+    "name": "Обретение фамильяра",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Призывает фамильяра-духа в облике животного.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 1,
+    "name": "Огненные ладони",
+    "base_damage": "3к6",
+    "damage_type": "Огонь",
+    "short_description": "Выпускает конус пламени, нанося урон огнём.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": "Ловкость",
+    "scaling": "Урон увеличивается на 1к6 за каждый уровень ячейки выше 1-го."
+  },
+  {
+    "level": 1,
+    "name": "Огонь фей",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Подсвечивает цели, давая преимущество атакам.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Бард",
+      "Друид"
+    ],
+    "saving_throw": "Ловкость",
+    "scaling": null
+  },
+  {
+    "level": 1,
+    "name": "Опознание",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Опознаёт свойства магических объектов или эффектов.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 1,
+    "name": "Опутывание",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Создаёт плети растений, опутывающие существ.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Друид",
+      "Следопыт"
+    ],
+    "saving_throw": "Сила",
+    "scaling": null
+  },
+  {
+    "level": 1,
+    "name": "Опутывающий удар",
+    "base_damage": "1к6",
+    "damage_type": "Колющий",
+    "short_description": "Обвивает цель лозами после попадания.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Следопыт"
+    ],
+    "saving_throw": "Сила",
+    "scaling": "Урон увеличивается на 1к6 за каждый уровень ячейки выше 1-го."
+  },
+  {
+    "level": 1,
+    "name": "Очарование личности",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Очаровывает гуманоидов, делая их дружелюбными.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Друид",
+      "Колдун",
+      "Чародей"
+    ],
+    "saving_throw": "Мудрость",
+    "scaling": "Вы можете нацелить заклинание на одно дополнительное существо за каждый уровень ячейки выше 1-го."
+  },
+  {
+    "level": 1,
+    "name": "Очищение пищи и питья",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Очищает еду и питьё от ядов и гнили.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Друид",
+      "Жрец",
+      "Паладин"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 1,
+    "name": "Падение пёрышком",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Замедляет падение, предотвращая урон от падения.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 1,
+    "name": "Палящая кара",
+    "base_damage": "1к6",
+    "damage_type": "Огонь",
+    "short_description": "Наносит урон огнём после попадания.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Паладин"
+    ],
+    "saving_throw": "Телосложение",
+    "scaling": "Весь урон увеличивается на 1к6 за каждый уровень ячейки выше 1-го."
+  },
+  {
+    "level": 1,
+    "name": "Парящий диск Тензера",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Создаёт парящий диск для ношения грузов.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 1,
+    "name": "Понимание языков",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Позволяет понимать любые языки и письмена.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Колдун",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 1,
+    "name": "Порча",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Цели вычитают 1к4 из атак и спасов.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Жрец",
+      "Колдун"
+    ],
+    "saving_throw": "Харизма",
+    "scaling": "Вы можете нацелить заклинание на одно дополнительное существо за каждый уровень ячейки выше 1-го."
+  },
+  {
+    "level": 1,
+    "name": "Поспешное отступление",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Позволяет совершать рывок бонусным действием.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Колдун",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 1,
+    "name": "Приказ",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Отдаёт приказ, заставляющий цель действовать определённо.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Жрец",
+      "Паладин"
+    ],
+    "saving_throw": "Мудрость",
+    "scaling": "Вы можете воздействовать на одно дополнительное существо за каждый уровень ячейки выше 1-го."
+  },
+  {
+    "level": 1,
+    "name": "Прыжок",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Увеличивает дальность прыжка цели.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Друид",
+      "Следопыт",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": "Вы можете нацелить заклинание на одно дополнительное существо за каждый уровень ячейки выше 1-го."
+  },
+  {
+    "level": 1,
+    "name": "Псевдожизнь",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Даёт временные хиты.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": "Вы получаете на 5 Временных хитов больше за каждый уровень ячейки выше 1-го."
+  },
+  {
+    "level": 1,
+    "name": "Разговор с животными",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Позволяет понимать и общаться со зверями.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Друид",
+      "Колдун",
+      "Следопыт"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 1,
+    "name": "Руки Хадара",
+    "base_damage": "2к6",
+    "damage_type": "Некротический",
+    "short_description": "Выпускает плети тьмы, нанося некротический урон.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Колдун"
+    ],
+    "saving_throw": "Сила",
+    "scaling": "Урон увеличивается на 1к6 за каждый уровень ячейки выше 1-го."
+  },
+  {
+    "level": 1,
+    "name": "Сверкающие брызги",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Ослепляет существ вспышкой цветов.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": "Телосложение",
+    "scaling": null
+  },
+  {
+    "level": 1,
+    "name": "Сглаз",
+    "base_damage": "1к6",
+    "damage_type": "Некротический",
+    "short_description": "Проклинает цель, нанося дополнительный некротический урон.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Колдун"
+    ],
+    "saving_throw": null,
+    "scaling": "При сотворении заклинания c ячейкой 2-го уровня вы можете поддерживать Концентрацию до 4 часов, c ячейкой 3-го или 4-го уровня до 8 часов, а с ячейкой заклинаний 5-го уровня или выше — до 24 часов."
+  },
+  {
+    "level": 1,
+    "name": "Сигнал тревоги",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Устанавливает сигнализацию на вторжение.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Волшебник",
+      "Следопыт"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 1,
+    "name": "Скороход",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Увеличивает скорость цели на 10 футов.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Друид",
+      "Следопыт"
+    ],
+    "saving_throw": null,
+    "scaling": "Вы можете нацелить заклинание на одно дополнительное существо за каждый уровень ячейки выше 1-го."
+  },
+  {
+    "level": 1,
+    "name": "Смазывание",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Покрывает область смазкой, сбивая с ног.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": "Ловкость",
+    "scaling": null
+  },
+  {
+    "level": 1,
+    "name": "Сотворение или уничтожение воды",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Создаёт или уничтожает воду или туман.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Друид",
+      "Жрец"
+    ],
+    "saving_throw": null,
+    "scaling": "За каждый уровень ячейки выше 1-го вы создаёте или уничтожаете на 10 галлонов воды больше, а длина ребра Куба увеличивается на 5 футов."
+  },
+  {
+    "level": 1,
+    "name": "Туманное облако",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Создаёт сферу тумана, заслоняющую вид.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Волшебник",
+      "Друид",
+      "Следопыт",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": "Радиус Сферы увеличивается на 20 футов за каждый уровень ячейки выше 1-го."
+  },
+  {
+    "level": 1,
+    "name": "Убежище",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Защищает цель от атак и заклинаний.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Жрец"
+    ],
+    "saving_throw": "Мудрость",
+    "scaling": null
+  },
+  {
+    "level": 1,
+    "name": "Усыпление",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Усыпляет существ в области.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": "Мудрость",
+    "scaling": null
+  },
+  {
+    "level": 1,
+    "name": "Хроматический шар",
+    "base_damage": "3к8",
+    "damage_type": "Звук",
+    "short_description": "Метает шар энергии выбранного типа урона.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": "Урон увеличивается на 1к8 за каждый уровень ячейки выше 1-го. Количество раз, когда шар может перескочить на новую цель, равно уровню ячейки, но каждое существо может быть выбрано целью только один раз за сотворение заклинания."
+  },
+  {
+    "level": 1,
+    "name": "Щит",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Создаёт барьер, повышающий КЗ и блокирующий стрелы.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 1,
+    "name": "Щит веры",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Даёт цели бонус +2 к КЗ.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Жрец",
+      "Паладин"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  }
+]

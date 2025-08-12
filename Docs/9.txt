@@ -1,0 +1,187 @@
+[
+  {
+    "level": 9,
+    "name": "Врата",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Создаёт портал на другой план бытия.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Жрец",
+      "Колдун",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 9,
+    "name": "Гроза гнева",
+    "base_damage": "2к6",
+    "damage_type": "Звук",
+    "short_description": "Создаёт бурю с различными эффектами урона.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Друид"
+    ],
+    "saving_throw": "Телосложение",
+    "scaling": null
+  },
+  {
+    "level": 9,
+    "name": "Желание",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Изменяет реальность по желанию заклинателя.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 9,
+    "name": "Истинный полиморф",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Превращает цель в другое существо или объект.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Колдун",
+      "Чародей"
+    ],
+    "saving_throw": "Мудрость",
+    "scaling": null
+  },
+  {
+    "level": 9,
+    "name": "Магическая тюрьма",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Затягивает существо в магическую тюрьму.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Колдун"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 9,
+    "name": "Массовое исцеление",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Восстанавливает хиты нескольким существам.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Жрец"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 9,
+    "name": "Метеоритный дождь",
+    "base_damage": "20к6",
+    "damage_type": "Огонь",
+    "short_description": "Вызывает метеориты, наносящие огонь и дробящий урон.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": "Ловкость",
+    "scaling": null
+  },
+  {
+    "level": 9,
+    "name": "Остановка времени",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Останавливает время для всех, кроме заклинателя.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 9,
+    "name": "Предвидение",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Даёт предвидение, улучшающее действия цели.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Колдун",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 9,
+    "name": "Призматическая стена",
+    "base_damage": "12к6",
+    "damage_type": "Огонь",
+    "short_description": "Создаёт стену с разноцветными эффектами урона.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Волшебник"
+    ],
+    "saving_throw": "Ловкость",
+    "scaling": null
+  },
+  {
+    "level": 9,
+    "name": "Слово силы: исцеление",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Восстанавливает хиты и снимает состояния.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Жрец"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 9,
+    "name": "Слово силы: смерть",
+    "base_damage": "12к12",
+    "damage_type": "Психический",
+    "short_description": "Убивает или наносит психический урон.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Колдун",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  }
+]

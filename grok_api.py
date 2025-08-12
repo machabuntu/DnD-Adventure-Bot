@@ -388,13 +388,12 @@ class GrokAPI:
             self.db.execute_query("""
                 INSERT INTO enemies (adventure_id, name, hit_points, max_hit_points, 
                                    strength, dexterity, constitution, intelligence, wisdom, charisma,
-                                   attack_name, attack_damage, attack_bonus, experience_reward, armor_class)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                                   xp, armor_class)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (adventure_id, enemy_data['name'], enemy_data['hit_points'], 
                   enemy_data['max_hit_points'], enemy_data['strength'], enemy_data['dexterity'],
                   enemy_data['constitution'], enemy_data['intelligence'], enemy_data['wisdom'],
-                  enemy_data['charisma'], enemy_data['attack_name'], enemy_data['attack_damage'],
-                  enemy_data['attack_bonus'], enemy_data['experience_reward'], enemy_data['armor_class']))
+                  enemy_data['charisma'], enemy_data['experience_reward'], enemy_data['armor_class']))
             
             # Получаем ID созданного врага
             enemy_id_result = self.db.execute_query("SELECT LAST_INSERT_ID() as id")
@@ -403,9 +402,14 @@ class GrokAPI:
                 
                 # Сохраняем все атаки в отдельную таблицу
                 for attack_name, attack_damage, attack_bonus in attack_matches:
+                    # Парсим тип урона из строки damage
+                    damage_parts = attack_damage.strip().split()
+                    damage_dice = damage_parts[0] if damage_parts else "1d4"
+                    damage_type = damage_parts[1] if len(damage_parts) > 1 else "physical"
+                    
                     self.db.execute_query(
-                        "INSERT INTO enemy_attacks (enemy_id, name, damage, bonus) VALUES (%s, %s, %s, %s)",
-                        (enemy_data['id'], attack_name.strip(), attack_damage.strip(), int(attack_bonus))
+                        "INSERT INTO enemy_attacks (enemy_id, name, damage, damage_type, attack_bonus) VALUES (%s, %s, %s, %s, %s)",
+                        (enemy_data['id'], attack_name.strip(), damage_dice, damage_type, int(attack_bonus))
                     )
                     logger.info(f"PARSE DEBUG: Saved attack: {attack_name} ({attack_damage}, +{attack_bonus})")
             

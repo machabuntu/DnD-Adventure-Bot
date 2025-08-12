@@ -1,0 +1,839 @@
+[
+  {
+    "level": 2,
+    "name": "Бесследное передвижение",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Даёт бонус к скрытности и убирает следы.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Друид",
+      "Следопыт"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 2,
+    "name": "Вечный огонь",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Создаёт неугасимое магическое пламя без тепла.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Жрец"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 2,
+    "name": "Видение невидимого",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Позволяет видеть невидимых и эфирных существ.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 2,
+    "name": "Внушение",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Внушает цель выполнять безопасные действия.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Колдун",
+      "Чародей"
+    ],
+    "saving_throw": "Мудрость",
+    "scaling": null
+  },
+  {
+    "level": 2,
+    "name": "Волшебная аура Нистула",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Изменяет восприятие магической ауры цели.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 2,
+    "name": "Волшебные уста",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Объект произносит сообщение при выполнении условия.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 2,
+    "name": "Волшебный замок",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Магически запирает объект, задавая пароль.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 2,
+    "name": "Воображаемая сила",
+    "base_damage": "2к8",
+    "damage_type": "Психический",
+    "short_description": "Создаёт иллюзию, наносящую психический урон.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": "Интеллект",
+    "scaling": null
+  },
+  {
+    "level": 2,
+    "name": "Вызов зверя",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Призывает духа зверя в выбранной форме.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Друид",
+      "Следопыт"
+    ],
+    "saving_throw": null,
+    "scaling": "Там, где блок статистики ссылается на уровень заклинания, используйте уровень ячейки заклинаний."
+  },
+  {
+    "level": 2,
+    "name": "Гадание",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Получает знамение о результате будущих действий.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Друид",
+      "Жрец"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 2,
+    "name": "Глухота/слепота",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Ослепляет или оглушает цель.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Жрец",
+      "Чародей"
+    ],
+    "saving_throw": "Телосложение",
+    "scaling": "Вы можете нацелить заклинание на одно дополнительное существо за каждый уровень ячейки выше 2-го."
+  },
+  {
+    "level": 2,
+    "name": "Горящий клинок",
+    "base_damage": "3к6",
+    "damage_type": "Огонь",
+    "short_description": "Создаёт огненный клинок для атаки.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Друид",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": "Урон увеличивается на 1к6 за каждый уровень ячейки выше 2-го."
+  },
+  {
+    "level": 2,
+    "name": "Дребезги",
+    "base_damage": "3к8",
+    "damage_type": "Звук",
+    "short_description": "Громкий звук наносит урон в области.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": "Телосложение",
+    "scaling": "Урон увеличивается на 1к8 за каждый уровень ячейки выше 2-го."
+  },
+  {
+    "level": 2,
+    "name": "Дубовая кожа",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Повышает КЗ цели до 17.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Друид",
+      "Следопыт"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 2,
+    "name": "Духовное оружие",
+    "base_damage": "1к8",
+    "damage_type": "Сила",
+    "short_description": "Создаёт парящее оружие для атаки.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Жрец"
+    ],
+    "saving_throw": null,
+    "scaling": "Урон увеличивается на 1к8 за каждый уровень ячейки выше 2-го."
+  },
+  {
+    "level": 2,
+    "name": "Дыхание дракона",
+    "base_damage": "3к6",
+    "damage_type": "Кислота",
+    "short_description": "Даёт цели способность выдыхать конус урона.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": "Ловкость",
+    "scaling": "Урон увеличивается на 1к6 за каждый уровень ячейки выше 2-го."
+  },
+  {
+    "level": 2,
+    "name": "Животные чувства",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Позволяет видеть чувствами зверя.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Друид",
+      "Следопыт"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 2,
+    "name": "Завеса стрел",
+    "base_damage": "2к4",
+    "damage_type": "Колющий",
+    "short_description": "Боеприпасы атакуют входящих в область.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Следопыт"
+    ],
+    "saving_throw": "Ловкость",
+    "scaling": "Количество боеприпасов увеличивается на два за каждый уровень ячейки выше 2-го."
+  },
+  {
+    "level": 2,
+    "name": "Защита от яда",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Снимает отравление и даёт сопротивление яду.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Друид",
+      "Жрец",
+      "Паладин",
+      "Следопыт"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 2,
+    "name": "Кислотная стрела Мельфа",
+    "base_damage": "4к4",
+    "damage_type": "Кислота",
+    "short_description": "Стрела наносит кислотный урон с последующим эффектом.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Волшебник"
+    ],
+    "saving_throw": null,
+    "scaling": "И урон от атаки, и последующий урон увеличиваются на 1к4 за каждый уровень ячейки выше 1-го."
+  },
+  {
+    "level": 2,
+    "name": "Корона безумия",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Заставляет цель атаковать указанное существо.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Колдун",
+      "Чародей"
+    ],
+    "saving_throw": "Мудрость",
+    "scaling": null
+  },
+  {
+    "level": 2,
+    "name": "Левитация",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Поднимает цель в воздух.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": "Телосложение",
+    "scaling": null
+  },
+  {
+    "level": 2,
+    "name": "Лунный луч",
+    "base_damage": "2к10",
+    "damage_type": "Излучение",
+    "short_description": "Создаёт луч, наносящий урон излучением.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Друид"
+    ],
+    "saving_throw": "Телосложение",
+    "scaling": "Урон увеличивается на 1к10 за каждый уровень ячейки выше 2-го."
+  },
+  {
+    "level": 2,
+    "name": "Малая реставрация",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Снимает состояния болезни, ослепления, отравления или паралича.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Друид",
+      "Жрец",
+      "Паладин",
+      "Следопыт"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 2,
+    "name": "Молчание",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Создаёт зону тишины, блокирующую звук.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Бард",
+      "Жрец",
+      "Следопыт"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 2,
+    "name": "Невидимость",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Делает цель невидимой.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Колдун",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": "Вы можете нацелить заклинание на одно дополнительное существо за каждый уровень ячейки выше 2-го."
+  },
+  {
+    "level": 2,
+    "name": "Облако кинжалов",
+    "base_damage": "4к4",
+    "damage_type": "Колющий",
+    "short_description": "Создаёт облако кинжалов, наносящее урон.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Волшебник",
+      "Колдун",
+      "Чародей"
+    ],
+    "saving_throw": "Ловкость",
+    "scaling": "Урон увеличивается на 2к4 за каждый уровень ячейки выше 2-го."
+  },
+  {
+    "level": 2,
+    "name": "Озноб металла",
+    "base_damage": "2к8",
+    "damage_type": "Холод",
+    "short_description": "Охлаждает металл, нанося урон и создавая помеху.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Друид"
+    ],
+    "saving_throw": "Телосложение",
+    "scaling": "Урон увеличивается на 1к8 за каждый уровень ячейки выше 2-го."
+  },
+  {
+    "level": 2,
+    "name": "Паутина",
+    "base_damage": "2к4",
+    "damage_type": "Огонь",
+    "short_description": "Создаёт паутину, опутывающую и воспламеняемую.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": "Ловкость",
+    "scaling": null
+  },
+  {
+    "level": 2,
+    "name": "Паучье лазанье",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Позволяет лазать по поверхностям без рук.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Колдун",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": "Вы можете нацелить заклинание на одно дополнительное существо за каждый уровень ячейки выше 2-го."
+  },
+  {
+    "level": 2,
+    "name": "Подмога",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Увеличивает максимум и текущие хиты целей.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Друид",
+      "Жрец",
+      "Паладин",
+      "Следопыт"
+    ],
+    "saving_throw": null,
+    "scaling": "Максимум Хитов и текущие Хиты целей увеличиваются ещё на 5 за каждый уровень ячейки выше 2-го."
+  },
+  {
+    "level": 2,
+    "name": "Поиск животных или растений",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Находит ближайшее животное или растение.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Друид",
+      "Следопыт"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 2,
+    "name": "Поиск ловушек",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Обнаруживает ловушки, но не их местоположение.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Друид",
+      "Жрец",
+      "Следопыт"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 2,
+    "name": "Поиск объекта",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Определяет направление к известному предмету.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Друид",
+      "Жрец",
+      "Паладин",
+      "Следопыт"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 2,
+    "name": "Поросль шипов",
+    "base_damage": "2к4",
+    "damage_type": "Колющий",
+    "short_description": "Создаёт шипы, наносящие урон при движении.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Друид",
+      "Следопыт"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 2,
+    "name": "Порыв ветра",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Создаёт ветер, отталкивающий и гасящий огонь.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Волшебник",
+      "Друид",
+      "Следопыт",
+      "Чародей"
+    ],
+    "saving_throw": "Сила",
+    "scaling": null
+  },
+  {
+    "level": 2,
+    "name": "Почтовое животное",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Зверь доставляет короткое сообщение.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Друид",
+      "Следопыт"
+    ],
+    "saving_throw": "Харизма",
+    "scaling": "Длительность заклинания увеличивается на 48 часов за каждый уровень ячейки выше 2-го."
+  },
+  {
+    "level": 2,
+    "name": "Пронзание разума",
+    "base_damage": "3к8",
+    "damage_type": "Психический",
+    "short_description": "Наносит психический урон и отслеживает цель.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Колдун",
+      "Чародей"
+    ],
+    "saving_throw": "Мудрость",
+    "scaling": "Урон увеличивается на 1к8 за каждый уровень ячейки выше 2-го."
+  },
+  {
+    "level": 2,
+    "name": "Пылающий шар",
+    "base_damage": "2к6",
+    "damage_type": "Огонь",
+    "short_description": "Создаёт огненный шар, наносящий урон.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Волшебник",
+      "Друид",
+      "Чародей"
+    ],
+    "saving_throw": "Ловкость",
+    "scaling": "Урон увеличивается на 1к6 за каждый уровень ячейки выше 2-го."
+  },
+  {
+    "level": 2,
+    "name": "Размытый образ",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Делает тело размытым, затрудняя атаки.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 2,
+    "name": "Речь златоуста",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Отвлекает существ речью, снижая восприятие.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Бард",
+      "Колдун"
+    ],
+    "saving_throw": "Мудрость",
+    "scaling": null
+  },
+  {
+    "level": 2,
+    "name": "Сияющая кара",
+    "base_damage": "2к6",
+    "damage_type": "Излучение",
+    "short_description": "Наносит урон излучением и подсвечивает цель.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Паладин"
+    ],
+    "saving_throw": null,
+    "scaling": "Урон увеличивается на 1к6 за каждый уровень ячейки выше 2-го."
+  },
+  {
+    "level": 2,
+    "name": "Смена обличья",
+    "base_damage": "1к6",
+    "damage_type": "Рубящий",
+    "short_description": "Изменяет форму, добавляя оружие или адаптации.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 2,
+    "name": "Стук",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Открывает замки или подавляет волшебный замок.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 2,
+    "name": "Тёмное зрение",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Даёт тёмное зрение на 150 футов.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Друид",
+      "Следопыт",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 2,
+    "name": "Тишина",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Создаёт зону тишины, блокирующую звук.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Бард",
+      "Жрец",
+      "Следопыт"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 2,
+    "name": "Трюк с верёвкой",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Создаёт портал в межпространство.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 2,
+    "name": "Туманный шаг",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Телепортирует в видимое пространство.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Колдун",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 2,
+    "name": "Тьма",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Создаёт магическую тьму, блокирующую зрение.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Волшебник",
+      "Колдун",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 2,
+    "name": "Увеличение/уменьшение",
+    "base_damage": "1к4",
+    "damage_type": "Рубящий",
+    "short_description": "Изменяет размер цели, влияя на силу и урон.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Друид",
+      "Чародей"
+    ],
+    "saving_throw": "Телосложение",
+    "scaling": null
+  },
+  {
+    "level": 2,
+    "name": "Удержание личности",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Парализует гуманоида на время.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Друид",
+      "Жрец",
+      "Колдун",
+      "Чародей"
+    ],
+    "saving_throw": "Мудрость",
+    "scaling": "Вы можете нацелить заклинание на одного дополнительного Гуманоида за каждый уровень заклинания выше 2-го."
+  },
+  {
+    "level": 2,
+    "name": "Улучшение характеристики",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Даёт преимущество на проверки характеристики.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Друид",
+      "Жрец",
+      "Следопыт",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": "Вы можете нацелить заклинание на одно дополнительное существо за каждый уровень заклинания выше 2-го."
+  },
+  {
+    "level": 2,
+    "name": "Умиротворение",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Успокаивает гуманоидов, снимая страх или враждебность.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Бард",
+      "Жрец"
+    ],
+    "saving_throw": "Харизма",
+    "scaling": null
+  }
+]

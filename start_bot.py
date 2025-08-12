@@ -38,7 +38,8 @@ from adventure_manager import adventure_manager
 from database import get_db
 from action_handler import action_handler
 from callback_handler import handle_callback_query
-from bot import start, help_command, version_command, show_character, show_party, delete_character, join_adventure, leave_adventure, unknown_command
+from rest_handler import rest_handler
+from bot import start, help_command, version_command, show_character, show_party, show_achievements, delete_character, join_adventure, leave_adventure, error_handler
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -57,12 +58,14 @@ def main():
     application.add_handler(CommandHandler("generate", character_gen.start_character_generation))
     application.add_handler(CommandHandler("character", show_character))
     application.add_handler(CommandHandler("party", show_party))
+    application.add_handler(CommandHandler("achievements", show_achievements))
     application.add_handler(CommandHandler("startnewadventure", adventure_manager.start_new_adventure))
     application.add_handler(CommandHandler("terminateadventure", adventure_manager.terminate_adventure))
     application.add_handler(CommandHandler("deletecharacter", delete_character))
     application.add_handler(CommandHandler("joinadventure", join_adventure))
     application.add_handler(CommandHandler("leaveadventure", leave_adventure))
     application.add_handler(CommandHandler("action", action_handler.handle_action_command))
+    application.add_handler(CommandHandler("rest", rest_handler.handle_rest_command))
     
     # Add callback query handler
     application.add_handler(CallbackQueryHandler(handle_callback_query))
@@ -70,8 +73,8 @@ def main():
     # Add message handler for character name input
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, character_gen.handle_name_input))
     
-    # Register handler for unknown commands
-    application.add_error_handler(unknown_command)
+    # Register error handler
+    application.add_error_handler(error_handler)
 
     # Start the bot using the polling method
     logger.info("Starting the bot...")

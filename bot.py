@@ -8,6 +8,9 @@ from adventure_manager import adventure_manager
 from database import get_db
 from action_handler import action_handler
 from callback_handler import handle_callback_query
+from rest_handler import rest_handler
+from spell_slot_manager import spell_slot_manager
+from achievement_manager import achievement_manager
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -248,6 +251,16 @@ def format_character_display(char: dict, db) -> str:
                 level_name = "Заговоры" if level == 0 else f"{level} уровень"
                 spells_list = ", ".join(spells_by_level[level])
                 info_text += f"• <b>{level_name}:</b> {spells_list}\n"
+        
+        # Добавляем информацию о слотах заклинаний
+        slots = spell_slot_manager.get_available_slots(char['id'])
+        if slots:
+            info_text += "\n📊 <b>Слоты заклинаний:</b>\n"
+            for level in sorted(slots.keys()):
+                used, max_slots = slots[level]
+                available = max_slots - used
+                emoji = "🔴" if available == 0 else "🟢" if available == max_slots else "🟡"
+                info_text += f"{emoji} <b>Уровень {level}:</b> {available}/{max_slots}\n"
     
     # Добавляем характеристики в конце (как в окне создания)
     info_text += stats_text
@@ -287,6 +300,7 @@ async def version_command(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 • /character - Показать персонажа ⭐ НОВАЯ
 • /party - Показать группу ⭐ НОВАЯ
 • /help - Помощь
+• /achievements - Достижения ⭐ НОВАЯ
 • /version - Эта команда
 
 🔧 <b>Статус:</b> Работает"""
@@ -307,13 +321,19 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
 <b>🗺️ Приключения:</b>
 • /startnewadventure - Начать новое приключение
-• /terminateadventure - завершить текущее приключение
+• /terminateadventure - Завершить текущее приключение
 • /joinadventure - Присоединиться к активному приключению
 • /leaveadventure - Покинуть текущее приключение
 
+<b>⚔️ Действия:</b>
+• /action [действие] - Выполнить действие в приключении
+• /rest - Инициировать голосование за отдых группы
+
 <b>👥 Группа:</b>
 • /party - Показать состав текущей группы
-• /action [действие] - Выполнить действие в приключении
+
+<b>🏆 Прогресс:</b>
+• /achievements - Показать ваши достижения
 
 <b>ℹ️ Информация:</b>
 • /start - Запуск бота
@@ -324,6 +344,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 - Создайте персонажа командой /generate перед началом приключения
 - Используйте /party чтобы узнать кто в группе
 - В приключении используйте кнопки или команду /action для действий
+- Команда /rest запускает голосование за отдых (восстанавливает HP и слоты заклинаний)
 - Бот поддерживает полноценную боевую систему D&D 5e
 
 <i>Удачи в приключениях! 🌟</i>"""
@@ -487,6 +508,17 @@ async def show_character(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     
     await update.message.reply_text(char_info, parse_mode='HTML')
 
+async def show_achievements(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Show user achievements"""
+    if update.effective_chat.id != ALLOWED_CHAT_ID:
+        return
+    
+    user_id = update.effective_user.id
+    
+    # Format and display achievements
+    achievements_text = achievement_manager.format_achievements_list(user_id)
+    await update.message.reply_text(achievements_text, parse_mode='HTML')
+
 async def show_party(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Show current party members"""
     if update.effective_chat.id != ALLOWED_CHAT_ID:
@@ -571,12 +603,14 @@ async def main() -> None:
     application.add_handler(CommandHandler("generate", character_gen.start_character_generation))
     application.add_handler(CommandHandler("character", show_character))
     application.add_handler(CommandHandler("party", show_party))
+    application.add_handler(CommandHandler("achievements", show_achievements))
     application.add_handler(CommandHandler("startnewadventure", adventure_manager.start_new_adventure))
     application.add_handler(CommandHandler("terminateadventure", adventure_manager.terminate_adventure))
     application.add_handler(CommandHandler("deletecharacter", delete_character))
     application.add_handler(CommandHandler("joinadventure", join_adventure))
     application.add_handler(CommandHandler("leaveadventure", leave_adventure))
     application.add_handler(CommandHandler("action", action_handler.handle_action_command))
+    application.add_handler(CommandHandler("rest", rest_handler.handle_rest_command))
     
     # Add callback query handler
     application.add_handler(CallbackQueryHandler(handle_callback_query))

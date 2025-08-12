@@ -1,0 +1,427 @@
+[
+  {
+    "level": 5,
+    "name": "Быстрый колчан",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Позволяет совершать две дальнобойные атаки.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Следопыт"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 5,
+    "name": "Вызов дракона",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Призывает духа дракона для боя.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник"
+    ],
+    "saving_throw": null,
+    "scaling": "Там, где блок статистики ссылается на уровень заклинания, используйте уровень ячейки заклинаний."
+  },
+  {
+    "level": 5,
+    "name": "Вызов небожителя",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Призывает духа небожителя для боя.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Жрец",
+      "Паладин"
+    ],
+    "saving_throw": null,
+    "scaling": "Там, где блок статистики ссылается на уровень заклинания, используйте уровень ячейки заклинаний."
+  },
+  {
+    "level": 5,
+    "name": "Высшее восстановление",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Снимает состояния, проклятия и истощение.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Друид",
+      "Жрец",
+      "Паладин",
+      "Следопыт"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 5,
+    "name": "Гейс",
+    "base_damage": "5к10",
+    "damage_type": "Психический",
+    "short_description": "Заставляет выполнять команду, нанося урон при неповиновении.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Друид",
+      "Жрец",
+      "Паладин"
+    ],
+    "saving_throw": "Мудрость",
+    "scaling": "Заклинание длится 365 дней при использовании ячейки 7-го или 8-го уровня, или до снятия при 9-м уровне."
+  },
+  {
+    "level": 5,
+    "name": "Грёзы",
+    "base_damage": "3к6",
+    "damage_type": "Психический",
+    "short_description": "Создаёт сон для общения или кошмара.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Колдун"
+    ],
+    "saving_throw": "Мудрость",
+    "scaling": null
+  },
+  {
+    "level": 5,
+    "name": "Древесный путь",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Позволяет телепортироваться через деревья.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Друид",
+      "Следопыт"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 5,
+    "name": "Длань Бигби",
+    "base_damage": "5к8",
+    "damage_type": "Сила",
+    "short_description": "Создаёт магическую руку для атаки и манипуляций.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": "Сила",
+    "scaling": "Урон Сжатого кулака увеличивается на 2к8, а урон Сжимающей длани на 2к6 за каждый уровень ячейки выше 5-го."
+  },
+  {
+    "level": 5,
+    "name": "Живая стена",
+    "base_damage": "7к8",
+    "damage_type": "Некротический",
+    "short_description": "Создаёт стену, наносящую некротический урон.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Волшебник"
+    ],
+    "saving_throw": "Телосложение",
+    "scaling": "Урон увеличивается на 1к8 за каждый уровень ячейки выше 5-го."
+  },
+  {
+    "level": 5,
+    "name": "Заразный разум",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Нарушает концентрацию и вызывает случайное поведение.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Колдун"
+    ],
+    "saving_throw": "Интеллект",
+    "scaling": null
+  },
+  {
+    "level": 5,
+    "name": "Круг силы",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Создаёт ауру, защищающую от магии.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Жрец",
+      "Паладин"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 5,
+    "name": "Молитва исцеления",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Восстанавливает хиты нескольким существам.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Жрец"
+    ],
+    "saving_throw": null,
+    "scaling": "Лечение увеличивается на 1к8 за каждый уровень ячейки выше 5-го."
+  },
+  {
+    "level": 5,
+    "name": "Общение",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Связывается с божеством для вопросов.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Жрец"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 5,
+    "name": "Общение с природой",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Получает информацию от природы.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Друид",
+      "Следопыт"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 5,
+    "name": "Оживление предметов",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Оживляет предметы для боя или задач.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 5,
+    "name": "Подчинение личности",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Очаровывает гуманоида, подчиняя его командам.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Колдун",
+      "Чародей"
+    ],
+    "saving_throw": "Мудрость",
+    "scaling": "Вы можете нацелить заклинание на одно дополнительное существо за каждый уровень ячейки выше 5-го."
+  },
+  {
+    "level": 5,
+    "name": "Прикосновение вампира",
+    "base_damage": "3к6",
+    "damage_type": "Некротический",
+    "short_description": "Наносит некротический урон и восстанавливает хиты.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Колдун"
+    ],
+    "saving_throw": null,
+    "scaling": "Урон увеличивается на 1к6 за каждый уровень ячейки выше 5-го."
+  },
+  {
+    "level": 5,
+    "name": "Священное оружие",
+    "base_damage": "2к10",
+    "damage_type": "Излучение",
+    "short_description": "Оружие наносит дополнительный урон излучением.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Паладин"
+    ],
+    "saving_throw": null,
+    "scaling": "Урон увеличивается на 1к10 за каждый уровень ячейки выше 5-го."
+  },
+  {
+    "level": 5,
+    "name": "Сияющий шторм Джалларзи",
+    "base_damage": "2к10",
+    "damage_type": "Излучение",
+    "short_description": "Создаёт шторм, ослепляющий и наносящий урон.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Волшебник",
+      "Колдун"
+    ],
+    "saving_throw": "Телосложение",
+    "scaling": "Урон Излучением и Звуком увеличивается на 1к10 за каждый уровень ячейки выше 5-го."
+  },
+  {
+    "level": 5,
+    "name": "Создание прохода",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Создаёт проход в твердой поверхности.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник"
+    ],
+    "saving_throw": null,
+    "scaling": "Длина ребра Куба увеличивается на 5 футов за каждый уровень ячейки выше 5-го."
+  },
+  {
+    "level": 5,
+    "name": "Сотворение",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Создаёт неживой объект из теневой материи.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": "Длина ребра Куба увеличивается на 5 футов за каждый уровень ячейки выше 5-го."
+  },
+  {
+    "level": 5,
+    "name": "Стена огня",
+    "base_damage": "5к8",
+    "damage_type": "Огонь",
+    "short_description": "Создаёт стену, наносящую урон огнём.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Волшебник",
+      "Друид",
+      "Чародей"
+    ],
+    "saving_throw": "Ловкость",
+    "scaling": "Урон увеличивается на 1к8 за каждый уровень ячейки выше 5-го."
+  },
+  {
+    "level": 5,
+    "name": "Стена силы",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Создаёт невидимую защитную стену.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Волшебник"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 5,
+    "name": "Телекинез",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Перемещает объекты или существ силой мысли.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": "Сила",
+    "scaling": null
+  },
+  {
+    "level": 5,
+    "name": "Удар стального ветра",
+    "base_damage": "6к10",
+    "damage_type": "Сила",
+    "short_description": "Наносит урон и телепортирует заклинателя.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Следопыт"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 5,
+    "name": "Удержание монстра",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Парализует существо на время.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Колдун",
+      "Чародей"
+    ],
+    "saving_throw": "Мудрость",
+    "scaling": "Вы можете нацелить заклинание на одно дополнительное существо за каждый уровень ячейки выше 5-го."
+  },
+  {
+    "level": 5,
+    "name": "Фальшивый двойник",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Создаёт двойника и делает заклинателя невидимым.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Колдун"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 5,
+    "name": "Царственное величие Йоланды",
+    "base_damage": "4к6",
+    "damage_type": "Психический",
+    "short_description": "Создаёт ауру, наносящую урон и опрокидывающую.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Бард",
+      "Волшебник"
+    ],
+    "saving_throw": "Мудрость",
+    "scaling": null
+  }
+]

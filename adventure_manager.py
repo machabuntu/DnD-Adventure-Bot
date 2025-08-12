@@ -159,6 +159,12 @@ class AdventureManager:
         adventure_id = active_adventure[0]['id']
         self.db.execute_query("UPDATE adventures SET status = 'terminated' WHERE id = %s", (adventure_id,))
 
+        # Also clear accumulated combat metrics for this adventure
+        self.db.execute_query(
+            "DELETE FROM combat_metrics WHERE adventure_id = %s",
+            (adventure_id,)
+        )
+
         await update.message.reply_text("The adventure has been terminated.")
 
 # Global instance

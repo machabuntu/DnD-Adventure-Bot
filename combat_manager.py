@@ -7,6 +7,8 @@ from grok_api import grok
 from telegram_utils import send_long_message
 from dice_utils import roll_d20, roll_dice, roll_dice_detailed, is_critical_hit, is_critical_miss
 from armor_utils import calculate_character_ac, update_character_ac
+from achievement_manager import achievement_manager
+from combat_achievements import init_combat, increment_round, get_round, record_damage_taken, award_end_combat_achievements
 import asyncio
 
 logger = logging.getLogger(__name__)
@@ -88,6 +90,12 @@ class CombatManager:
         # Inform players
         await self.show_initiative_order(update, adventure_id)
         
+        # Инициализируем состояние боя (раунд, метрики)
+        try:
+            init_combat(adventure_id)
+        except Exception as e:
+            logger.warning(f"COMBAT INIT WARNING: failed to init combat state for adventure {adventure_id}: {e}")
+        
         # Start the first turn
         await self.handle_turn(update, context, adventure_id, 0)
 
@@ -146,11 +154,26 @@ class CombatManager:
 
     async def display_actions(self, update: Update, context: ContextTypes.DEFAULT_TYPE, character_id: int, adventure_id: int, turn_index: int):
         """Display action choices to the player."""
+        # Проверяем, есть ли у персонажа боевые заклинания
+        combat_spells_query = """
+            SELECT COUNT(*) as count
+            FROM character_spells cs
+            JOIN spells s ON cs.spell_id = s.id
+            WHERE cs.character_id = %s AND s.is_combat = TRUE
+        """
+        
+        has_combat_spells = self.db.execute_query(combat_spells_query, (character_id,))
+        spell_count = has_combat_spells[0]['count'] if has_combat_spells else 0
+        
         keyboard = [
-            [InlineKeyboardButton("Attack", callback_data=f"action_attack_{character_id}_{adventure_id}_{turn_index}")],
-            [InlineKeyboardButton("Cast Spell", callback_data=f"action_spell_{character_id}_{adventure_id}_{turn_index}")],
-            [InlineKeyboardButton("Pass Turn", callback_data=f"action_pass_{character_id}_{adventure_id}_{turn_index}")]
+            [InlineKeyboardButton("⚔️ Attack", callback_data=f"action_attack_{character_id}_{adventure_id}_{turn_index}")],
+            [InlineKeyboardButton("⏭️ Pass Turn", callback_data=f"action_pass_{character_id}_{adventure_id}_{turn_index}")]
         ]
+        
+        # Добавляем кнопку заклинаний только если у персонажа есть боевые заклинания
+        if spell_count > 0:
+            keyboard.insert(1, [InlineKeyboardButton("🪄 Cast Spell", callback_data=f"action_spell_{character_id}_{adventure_id}_{turn_index}")])
+        
         reply_markup = InlineKeyboardMarkup(keyboard)
 
         # Try to send message using update.message first
@@ -246,8 +269,15 @@ class CombatManager:
         
         logger.info(f"COMBAT DEBUG: Moving from turn {current_turn_index} to turn {next_turn_index} (total: {total_participants})")
         
-        # Check for combat end conditions here if needed
-        # For now, just continue to next turn
+        # Если круг завершился, увеличиваем номер раунда
+        if next_turn_index == 0:
+            try:
+                increment_round(adventure_id)
+                logger.info(f"COMBAT DEBUG: Round incremented to {get_round(adventure_id)} for adventure {adventure_id}")
+            except Exception as e:
+                logger.warning(f"COMBAT ROUND WARNING: failed to increment round for adventure {adventure_id}: {e}")
+        
+        # Continue to next turn
         await self.handle_turn(update, context, adventure_id, next_turn_index)
 
     async def enemy_action(self, update: Update, adventure_id: int, participant: dict, context: ContextTypes.DEFAULT_TYPE = None):
@@ -267,10 +297,15 @@ class CombatManager:
             enemy = enemy_data[0]
             enemy_name = enemy['name']
             
+            # Check if enemy is still alive before attacking
+            if enemy['hit_points'] <= 0:
+                logger.info(f"ENEMY ACTION DEBUG: Enemy {enemy_name} is dead (HP: {enemy['hit_points']}), skipping turn")
+                return
+            
             # Select random character target
-            target_query = ("SELECT c.id, c.name, c.hit_points, c.max_hit_points FROM characters c "
+            target_query = ("SELECT c.id, c.name, c.current_hp, c.max_hp FROM characters c "
                             "JOIN adventure_participants ap ON c.id = ap.character_id "
-                            "WHERE ap.adventure_id = %s AND c.hit_points > 0")
+                            "WHERE ap.adventure_id = %s AND c.current_hp > 0")
 
             targets = self.db.execute_query(target_query, (adventure_id,))
             if not targets:
@@ -302,7 +337,7 @@ class CombatManager:
                     logger.warning(f"COMBAT DEBUG: Using default AC 10 for {target['name']}")
             
             # Get enemy's attacks from database
-            attacks_query = "SELECT name, damage, bonus FROM enemy_attacks WHERE enemy_id = %s"
+            attacks_query = "SELECT name, damage, attack_bonus FROM enemy_attacks WHERE enemy_id = %s"
             enemy_attacks = self.db.execute_query(attacks_query, (enemy['id'],))
             
             if enemy_attacks:
@@ -310,7 +345,7 @@ class CombatManager:
                 attack = random.choice(enemy_attacks)
                 attack_name = attack['name']
                 attack_damage = attack['damage']
-                attack_bonus = int(attack['bonus']) if attack['bonus'] else 0
+                attack_bonus = int(attack['attack_bonus']) if attack['attack_bonus'] else 0
                 
                 logger.info(f"COMBAT DEBUG: {enemy_name} using attack: {attack_name} ({attack_damage}, +{attack_bonus})")
             else:
@@ -356,10 +391,18 @@ class CombatManager:
                 result_text += f"\n💥 Урон: {damage_text} урона"
                 
                 # Apply damage
-                new_hp = max(0, target['hit_points'] - total_damage)
-                self.db.execute_query("UPDATE characters SET hit_points = %s WHERE id = %s", 
+                new_hp = max(0, target['current_hp'] - total_damage)
+                self.db.execute_query("UPDATE characters SET current_hp = %s WHERE id = %s", 
                                       (new_hp, target['id']))
-                result_text += f"\n❤️ {target['name']}: {target['hit_points']} → {new_hp} HP"
+                result_text += f"\n❤️ {target['name']}: {target['current_hp']} → {new_hp} HP"
+                
+                # Учет полученного урона персонажем (кумулятивно по приключению)
+                try:
+                    dealt = target['current_hp'] - new_hp
+                    if dealt > 0:
+                        record_damage_taken(adventure_id, target['id'], dealt)
+                except Exception as e:
+                    logger.warning(f"COMBAT METRICS WARNING: record_damage_taken failed: {e}")
                 
             elif is_critical_miss(raw_roll):
                 result_text += f"\n💨 КРИТИЧЕСКИЙ ПРОМАХ! (натуральная 1)"
@@ -371,14 +414,27 @@ class CombatManager:
                 result_text += f"\n💥 Урон: {damage_breakdown} урона"
                 
                 # Apply damage
-                new_hp = max(0, target['hit_points'] - damage_result)
-                self.db.execute_query("UPDATE characters SET hit_points = %s WHERE id = %s", 
+                new_hp = max(0, target['current_hp'] - damage_result)
+                self.db.execute_query("UPDATE characters SET current_hp = %s WHERE id = %s", 
                                       (new_hp, target['id']))
-                result_text += f"\n❤️ {target['name']}: {target['hit_points']} → {new_hp} HP"
+                result_text += f"\n❤️ {target['name']}: {target['current_hp']} → {new_hp} HP"
+                
+                # Учет полученного урона персонажем (кумулятивно по приключению)
+                try:
+                    dealt = target['current_hp'] - new_hp
+                    if dealt > 0:
+                        record_damage_taken(adventure_id, target['id'], dealt)
+                except Exception as e:
+                    logger.warning(f"COMBAT METRICS WARNING: record_damage_taken failed: {e}")
                 
                 # Check if character is defeated
                 if new_hp <= 0:
                     result_text += f"\n💀 {target['name']} потерял сознание!"
+                    # Достижение за героическую смерть
+                    user_query = "SELECT user_id FROM characters WHERE id = %s"
+                    user_result = self.db.execute_query(user_query, (target['id'],))
+                    if user_result and user_result[0]['user_id']:
+                        ach = achievement_manager.grant_achievement(user_result[0]['user_id'], 'character_death', target['name'])
                     # Remove character from active group and make inactive
                     await self.remove_character_from_combat(target['id'], adventure_id)
                     
@@ -402,7 +458,7 @@ class CombatManager:
             # Check if all characters are defeated
             alive_chars_query = ("SELECT COUNT(*) as count FROM characters c "
                                 "JOIN adventure_participants ap ON c.id = ap.character_id "
-                                "WHERE ap.adventure_id = %s AND c.hit_points > 0")
+                                "WHERE ap.adventure_id = %s AND c.current_hp > 0")
             alive_chars = self.db.execute_query(alive_chars_query, (adventure_id,))
             
             if alive_chars and alive_chars[0]['count'] == 0:
@@ -454,12 +510,18 @@ class CombatManager:
             dead_chars_query = (
                 "SELECT c.name FROM characters c "
                 "JOIN adventure_participants ap ON c.id = ap.character_id "
-                "WHERE ap.adventure_id = %s AND c.hit_points <= 0 AND c.is_active = FALSE"
+                "WHERE ap.adventure_id = %s AND c.current_hp <= 0 AND c.is_active = FALSE"
             )
             dead_chars_result = self.db.execute_query(dead_chars_query, (adventure_id,))
             if dead_chars_result:
                 dead_characters = [char['name'] for char in dead_chars_result]
                 logger.info(f"COMBAT END DEBUG: Found {len(dead_characters)} dead characters: {dead_characters}")
+        
+        # Выдаем достижения по итогам боя
+        try:
+            award_end_combat_achievements(adventure_id, victory)
+        except Exception as e:
+            logger.warning(f"ACHIEVEMENTS WARNING: awarding end-combat achievements failed: {e}")
         
         # Clear combat data
         self.db.execute_query("DELETE FROM combat_participants WHERE adventure_id = %s", (adventure_id,))
@@ -530,7 +592,7 @@ class CombatManager:
         
         # Get all participants
         participants = self.db.execute_query("""
-            SELECT c.id, c.name, c.experience, c.level
+            SELECT c.id, c.name, c.experience, c.level, c.user_id
             FROM adventure_participants ap
             JOIN characters c ON ap.character_id = c.id
             WHERE ap.adventure_id = %s
@@ -559,6 +621,14 @@ class CombatManager:
             
             if new_level > old_level:
                 leveled_up.append(f"{participant['name']} достиг {new_level} уровня!")
+                # Достижения за уровни для каждого достигнутого уровня
+                try:
+                    user_id = participant.get('user_id')
+                    if user_id:
+                        for lvl in range(old_level + 1, new_level + 1):
+                            achievement_manager.check_level_achievement(user_id, lvl, participant['name'])
+                except Exception as e:
+                    logger.warning(f"ACHIEVEMENTS WARNING: level achievements failed for {participant['name']}: {e}")
         
         # Notify about XP and level ups
         xp_text = f"🌟 Участники получают {xp_amount} опыта!"
@@ -628,6 +698,12 @@ class CombatManager:
         # Clear combat data if any
         self.db.execute_query(
             "DELETE FROM combat_participants WHERE adventure_id = %s",
+            (adventure_id,)
+        )
+        
+        # Also clear accumulated combat metrics for this adventure
+        self.db.execute_query(
+            "DELETE FROM combat_metrics WHERE adventure_id = %s",
             (adventure_id,)
         )
         

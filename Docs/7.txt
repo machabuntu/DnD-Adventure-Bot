@@ -1,0 +1,237 @@
+[
+  {
+    "level": 7,
+    "name": "Божественное слово",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Накладывает состояния или изгоняет существ.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Жрец"
+    ],
+    "saving_throw": "Харизма",
+    "scaling": null
+  },
+  {
+    "level": 7,
+    "name": "Великолепный особняк Морденкайнена",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Создаёт межпространственное жилище с прислугой.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 7,
+    "name": "Воскрешение",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Воскрешает мёртвое существо с полными хитами.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Жрец"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 7,
+    "name": "Замедленный огненный шар",
+    "base_damage": "12к6",
+    "damage_type": "Огонь",
+    "short_description": "Создаёт шар, взрывающийся с уроном огнём.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": "Ловкость",
+    "scaling": "Базовый урон увеличивается на 1к6 за каждый уровень ячейки выше 7-го."
+  },
+  {
+    "level": 7,
+    "name": "Знак",
+    "base_damage": "10к10",
+    "damage_type": "Психический",
+    "short_description": "Создаёт знак с магическими эффектами.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Друид",
+      "Жрец"
+    ],
+    "saving_throw": "Мудрость",
+    "scaling": null
+  },
+  {
+    "level": 7,
+    "name": "Корона звёзд",
+    "base_damage": "4к12",
+    "damage_type": "Излучение",
+    "short_description": "Создаёт звёзды, наносящие урон излучением.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": "Ловкость",
+    "scaling": "Число звёзд увеличивается на две за каждый уровень ячейки выше 7-го."
+  },
+  {
+    "level": 7,
+    "name": "Огненный шторм",
+    "base_damage": "7к10",
+    "damage_type": "Огонь",
+    "short_description": "Создаёт огненные кубы, наносящие урон.",
+    "deals_damage": true,
+    "area_effect": true,
+    "classes": [
+      "Друид",
+      "Жрец",
+      "Чародей"
+    ],
+    "saving_throw": "Ловкость",
+    "scaling": null
+  },
+  {
+    "level": 7,
+    "name": "Перст судьбы",
+    "base_damage": "7к8 + 30",
+    "damage_type": "Сила",
+    "short_description": "Наносит силовой урон, уничтожая при нуле хитов.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Колдун"
+    ],
+    "saving_throw": "Ловкость",
+    "scaling": "Урон увеличивается на 1к8 за каждый уровень ячейки выше 7-го."
+  },
+  {
+    "level": 7,
+    "name": "Планарное связывание",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Связывает существо, удерживая на плане.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник",
+      "Друид",
+      "Жрец",
+      "Колдун"
+    ],
+    "saving_throw": "Харизма",
+    "scaling": null
+  },
+  {
+    "level": 7,
+    "name": "Проекция",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Создаёт призрачную проекцию для исследования.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Колдун"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 7,
+    "name": "Регенерация",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Восстанавливает хиты и регенерирует части тела.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Друид",
+      "Жрец"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 7,
+    "name": "Симулякр",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Создаёт магического двойника существа.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Волшебник"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 7,
+    "name": "Телепортация",
+    "base_damage": "3к10",
+    "damage_type": "Сила",
+    "short_description": "Перемещает группу на большое расстояние.",
+    "deals_damage": true,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": null
+  },
+  {
+    "level": 7,
+    "name": "Узилище",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Создаёт магическую тюрьму для существ.",
+    "deals_damage": false,
+    "area_effect": true,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Колдун"
+    ],
+    "saving_throw": "Харизма",
+    "scaling": null
+  },
+  {
+    "level": 7,
+    "name": "Эфирность",
+    "base_damage": null,
+    "damage_type": null,
+    "short_description": "Перемещает на Эфирный план.",
+    "deals_damage": false,
+    "area_effect": false,
+    "classes": [
+      "Бард",
+      "Волшебник",
+      "Жрец",
+      "Колдун",
+      "Чародей"
+    ],
+    "saving_throw": null,
+    "scaling": "Можно нацелить на до трёх существ за каждый уровень ячейки выше 7-го."
+  }
+]
